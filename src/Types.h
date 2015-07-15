@@ -8,7 +8,7 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
-/**
+/*
  * A symbol in the code.
  * Can be an instruction or an operation.
  */
@@ -22,7 +22,7 @@ typedef struct
 
 typedef struct symbolNode* symbolNodePtr;
 
-/**
+/*
  * A symbol node in the symbol table.
  */
 typedef struct symbolNode
@@ -31,7 +31,7 @@ typedef struct symbolNode
 	symbolNodePtr next;
 } symbolNode;
 
-/**
+/*
  * An instruction. The instruction is built out of 12 bits;
  */
 typedef struct
@@ -42,6 +42,5 @@ typedef struct
 	unsigned int op_code : 4;
 	unsigned int group : 2;
 } instruction;
-
 
 #endif /* TYPES_H_ */
