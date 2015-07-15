@@ -6,10 +6,9 @@
  */
 
 #include <stdio.h>
-#include <ctype.h>
 
-void read_until_non_space(FILE* pFile){
-	while (!feof(pFile) && (isspace(fgetc(pFile))));
-
-	fseek(pFile, -1, SEEK_CUR);
+void print_compiler_error(char* message, int line_number, char* file_name) {
+	fprintf(stderr, "File: %s Line: %d Error: %s", file_name, line_number, message);
 }
+
+
