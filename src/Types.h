@@ -20,16 +20,16 @@ typedef struct
 	unsigned int address;
 } symbol;
 
-typedef struct symbolNode* symbolNodePtr;
+typedef struct symbol_node* symbol_node_ptr;
 
 /*
  * A symbol node in the symbol table.
  */
-typedef struct symbolNode
+typedef struct symbol_node
 {
 	symbol data;
-	symbolNodePtr next;
-} symbolNode;
+	symbol_node_ptr next;
+} symbol_node;
 
 /*
  * An instruction. The instruction is built out of 12 bits;
@@ -42,5 +42,25 @@ typedef struct
 	unsigned int op_code : 4;
 	unsigned int group : 2;
 } instruction;
+
+typedef struct data {
+	char value;
+	unsigned int address;
+} data;
+
+typedef struct data_node* data_node_ptr;
+
+typedef struct data_node {
+	data value;
+	data_node_ptr next;
+} data_node;
+
+typedef struct line_info {
+	char* line_str;
+	int line_length;
+	int current_index;
+	int line_number;
+	char* file_name;
+} line_info;
 
 #endif /* TYPES_H_ */

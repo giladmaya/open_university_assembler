@@ -14,6 +14,12 @@
 #define DATA_OPERATION ".data"
 #define EXTERN_OPERATION ".extern"
 #define LABEL_COLON ':'
+#define QUOTATION '\"'
+#define END_OF_LINE '\n'
+
+/*
+ * Operations
+ */
 #define MOV_OPERATION "MOV"
 #define CMP_OPERATION "CMP"
 #define ADD_OPERATION "ADD"
