@@ -5,17 +5,23 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/Compiler.c \
+../src/Data.c \
 ../src/FirstTransition.c \
+../src/SymbolTable.c \
 ../src/Utilities.c 
 
 OBJS += \
 ./src/Compiler.o \
+./src/Data.o \
 ./src/FirstTransition.o \
+./src/SymbolTable.o \
 ./src/Utilities.o 
 
 C_DEPS += \
 ./src/Compiler.d \
+./src/Data.d \
 ./src/FirstTransition.d \
+./src/SymbolTable.d \
 ./src/Utilities.d 
 
 

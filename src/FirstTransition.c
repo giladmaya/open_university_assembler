@@ -9,6 +9,8 @@
 #include "Consts.h"
 #include "Types.h"
 #include "Utilities.h"
+#include "SymbolTable.h"
+#include "Data.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -24,8 +26,8 @@ bool error = false;
  * Executes the first transition of the assembly compiler
  */
 void execute_first_transition(FILE* pFile, char* file_name) {
-	int IC = 0;
-	int DC = 0;
+	unsigned int IC = 0;
+	unsigned int DC = 0;
 	int line_number = 0;
 	char* line = (char*)malloc(sizeof(char) * MAX_LINE_LENGTH);
 
@@ -56,16 +58,14 @@ void execute_first_transition(FILE* pFile, char* file_name) {
 	}
 }
 
-void process_line(line_info* info, int* ic, int* dc) {
-
-	symbol* p_symbol = NULL;
+void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 	char* label = NULL;
 	char* type = NULL;
 	bool is_symbol = false;
 
 	get_word(info, &label);
 
-	if (label != NULL){
+	if (label != NULL) {
 		/* This is a line with a single word */
 		if (info->current_index == info->line_length) {
 			print_compiler_error("Invalid syntax. A single word without any instruction or operation", info);
@@ -76,9 +76,9 @@ void process_line(line_info* info, int* ic, int* dc) {
 		}
 
 		/* The word is followed by ':'. It must be a label */
-		if (info->line_str[info->current_index + 1] == LABEL_COLON) {
+		if (info->line_str[info->current_index] == LABEL_COLON) {
 			is_symbol = true;
-			info->current_index += 2;
+			info->current_index++;
 
 			get_word(info, &type);
 
@@ -96,23 +96,18 @@ void process_line(line_info* info, int* ic, int* dc) {
 		if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
 
 			if (is_symbol) {
-				p_symbol = get_data_symbol(info, dc, label, type);
+				process_data(info, dc, label, type);
 			}
 		}
 		/* The label is followed by '.extern'*/
 		else if (strcmp(type, EXTERN_OPERATION) == 0){
-			p_symbol = get_extern_symbol(label);
-
-			/* TODO: insert to extern symbols */
+			process_extern(info);
 		}
 		/* The label isn't followed by '.entry'. Therefore it is an operation */
 		else if (strcmp(type, ENTRY_OPERATION) != 0) {
 			if (is_symbol) {
-				p_symbol = get_operation_symbol(info, ic, label, type);
+				process_operation(info, ic, label);
 			}
-		}
-		else
-		{
 		}
 
 		free(type);
@@ -127,15 +122,9 @@ void get_word(line_info* info, char** word)
 		free(*word);
 	}
 
-	/* Finds first symbol token */
-	for (i = info->current_index; i < info->line_length; i++) {
-		if (!isspace(info->line_str[i])) {
-			break;
-		}
-	}
+	skip_all_spaces(info);
 
-	word_start_index = i;
-	word_end_index = i;
+	word_end_index  = word_start_index = i = info->current_index;
 
 	for (;i < info->line_length; i++) {
 		if (!isspace(info->line_str[i]) && (info->line_str[i] != LABEL_COLON)) {
@@ -145,71 +134,59 @@ void get_word(line_info* info, char** word)
 		{
 			break;
 		}
-
-		info->current_index = i;
 	}
 
 	word_length = word_end_index - word_start_index + 1;
 
 	*word = (char*)malloc(sizeof(char) * (word_length + 1));
 
-	strncpy(*word, info->line_str + word_start_index, word_length);
-}
-
-symbol* get_data_symbol(line_info* info, int* dc, char* word, char* type) {
-	symbol* p_symbol = (symbol*)malloc(sizeof(symbol));
-
-	if (p_symbol == NULL) {
-		/* TODO: bad allocation */
-		error = true;
+	if (*word == NULL) {
+		/* TODO: bad alloc */
 	} else {
-		data_node_ptr p_data_node = NULL;
+		strncpy(*word, info->line_str + word_start_index, word_length);
+		(*word)[word_length] = '\0';
 
-		p_symbol->is_instruction = true;
-		p_symbol->is_external = false;
-		p_symbol->address = *dc;
-
-		/* TODO: implement 7 phase in algo */
-		p_data_node = get_data(info, type, dc);
+		info->current_index = word_end_index + 1;
 	}
-
-	return p_symbol;
 }
 
-symbol* get_extern_symbol(char* label) {
-	symbol* p_symbol = (symbol*)malloc(sizeof(symbol));
+void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
+	symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
 
-	if (p_symbol == NULL) {
-		/* TODO: bad allocation */
-	} else {
-		p_symbol->is_external = true;
-		p_symbol->address = 0;
-		p_symbol->is_instruction = true;
+	if (p_symbol != NULL) {
+		get_data(info, type, dc);
+
+		add_symbol_to_list(p_symbol);
 	}
-
-	return p_symbol;
 }
 
-symbol* get_operation_symbol(line_info* info, int* ic, char* word, char* type) {
-	symbol* p_symbol = (symbol*)malloc(sizeof(symbol));
+void process_extern(line_info* info) {
+	symbol_node_ptr p_symbol = NULL;
+
+	char* extern_name = NULL;
+
+	get_word(info, &extern_name);
+
+	if (extern_name != NULL) {
+		p_symbol = create_symbol(extern_name, 0, true, true);
+
+		if (p_symbol != NULL) {
+				add_symbol_to_list(p_symbol);
+		}
+	}
+}
+
+void process_operation(line_info* info, unsigned int* ic, char* label) {
+	symbol_node_ptr p_symbol = create_symbol(label, 0, false, false);
 
 	if (p_symbol == NULL) {
-		/* TODO: bad allocation */
-	} else {
-		p_symbol->is_instruction = false;
-		p_symbol->is_external = false;
-		p_symbol->address = 0;
+		add_symbol_to_list(p_symbol);
 
 		/* TODO: implement 12-13 phase in algo */
 	}
-
-	return p_symbol;
 }
 
-data_node_ptr get_data(line_info* info, char* type, int* dc) {
-	data_node_ptr p_node = NULL;
-	int current_address = *dc;
-
+void get_data(line_info* info, char* type, unsigned int* dc) {
 	skip_all_spaces(info);
 
 	if (info->current_index > info->line_length) {
@@ -231,39 +208,15 @@ data_node_ptr get_data(line_info* info, char* type, int* dc) {
 				} else if (token == QUOTATION) {
 					break;
 				} else if (token != QUOTATION) {
-					data_node_ptr p_new_node = (data_node_ptr)malloc(sizeof(data_node));
-
-					if (p_new_node == NULL) {
-						/*TODO: bad alloc */
-						error = true;
-					} else {
-						current_address++;
-
-						p_new_node->value.value = token;
-						p_new_node->value.address = current_address;
-						p_new_node->next = NULL;
-
-						if (p_node == NULL) {
-							p_node = p_new_node;
-						} else {
-							data_node_ptr p_current_node = p_node;
-
-							while (p_current_node->next != NULL) {
-								p_current_node = p_current_node->next;
-							}
-
-							p_current_node->next = p_new_node;
-						}
-					}
+					(*dc)++;
+					add_data_to_list(token, *dc);
 				}
-			}
 
-			*dc = data_index;
+				data_index++;
+			}
 		}
 
 	} else {
 
 	}
-
-	return p_node;
 }
