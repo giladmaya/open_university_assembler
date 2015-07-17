@@ -65,6 +65,7 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 
 	get_word(info, &label);
 
+	/* The line isn't empty*/
 	if (label != NULL) {
 		/* This is a line with a single word */
 		if (info->current_index == info->line_length) {
@@ -114,47 +115,20 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 	}
 }
 
-void get_word(line_info* info, char** word)
-{
-	int i, word_end_index, word_start_index, word_length;
-
-	if (*word != NULL) {
-		free(*word);
-	}
-
-	skip_all_spaces(info);
-
-	word_end_index  = word_start_index = i = info->current_index;
-
-	for (;i < info->line_length; i++) {
-		if (!isspace(info->line_str[i]) && (info->line_str[i] != LABEL_COLON)) {
-			word_end_index = i;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	word_length = word_end_index - word_start_index + 1;
-
-	*word = (char*)malloc(sizeof(char) * (word_length + 1));
-
-	if (*word == NULL) {
-		/* TODO: bad alloc */
-	} else {
-		strncpy(*word, info->line_str + word_start_index, word_length);
-		(*word)[word_length] = '\0';
-
-		info->current_index = word_end_index + 1;
-	}
-}
-
 void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
 	symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
 
 	if (p_symbol != NULL) {
-		get_data(info, type, dc);
+		skip_all_spaces(info);
+
+		if (info->current_index > info->line_length) {
+			print_compiler_error("Any data instruction must be followed by data initialization", info);
+			error = true;
+		} else if (strcmp(type, STRING_OPERATION) == 0) {
+			process_string(info, dc);
+		} else {
+
+		}
 
 		add_symbol_to_list(p_symbol);
 	}
@@ -186,37 +160,27 @@ void process_operation(line_info* info, unsigned int* ic, char* label) {
 	}
 }
 
-void get_data(line_info* info, char* type, unsigned int* dc) {
-	skip_all_spaces(info);
-
-	if (info->current_index > info->line_length) {
-		print_compiler_error("Any data instruction must be followed by data initialization", info);
+void process_string(line_info* info, unsigned int* dc) {
+	if (info->line_str[info->current_index] != QUOTATION) {
+		print_compiler_error("A string must start with a '\"' token", info);
 		error = true;
-	} else if (strcmp(type, STRING_OPERATION) == 0) {
-		if (info->line_str[info->current_index] != QUOTATION) {
-			print_compiler_error("A string must start with a '\"' token", info);
-			error = true;
-		} else {
-			int data_index = info->current_index + 1;
-
-			while (data_index < info->line_length) {
-				char token = info->line_str[data_index];
-				if (token == END_OF_LINE) {
-					print_compiler_error("A string must end with a '\"' token", info);
-					error = true;
-					break;
-				} else if (token == QUOTATION) {
-					break;
-				} else if (token != QUOTATION) {
-					(*dc)++;
-					add_data_to_list(token, *dc);
-				}
-
-				data_index++;
-			}
-		}
-
 	} else {
+		int data_index = info->current_index + 1;
 
+		while (data_index < info->line_length) {
+			char token = info->line_str[data_index];
+			if (token == END_OF_LINE) {
+				print_compiler_error("A string must end with a '\"' token", info);
+				error = true;
+				break;
+			} else if (token == QUOTATION) {
+				break;
+			} else if (token != QUOTATION) {
+				(*dc)++;
+				add_data_to_list(token, *dc);
+			}
+
+			data_index++;
+		}
 	}
 }
