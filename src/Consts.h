@@ -16,6 +16,9 @@
 #define LABEL_COLON ':'
 #define QUOTATION '\"'
 #define END_OF_LINE '\n'
+#define MINUS_SIGN '-'
+#define NUMBER_TOKEN_SEPERATOR ','
+#define STRING_DATA_END 0
 
 /*
  * Operations

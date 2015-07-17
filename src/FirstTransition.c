@@ -127,7 +127,7 @@ void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
 		} else if (strcmp(type, STRING_OPERATION) == 0) {
 			process_string(info, dc);
 		} else {
-
+			process_numbers(info, dc);
 		}
 
 		add_symbol_to_list(p_symbol);
@@ -182,5 +182,46 @@ void process_string(line_info* info, unsigned int* dc) {
 
 			data_index++;
 		}
+
+		(*dc)++;
+		add_data_to_list(STRING_DATA_END, *dc);
+	}
+}
+
+void process_numbers(line_info* info, unsigned int* dc) {
+	bool is_valid = true;
+	skip_all_spaces(info);
+
+	while ((info->current_index < info->line_length) && is_valid) {
+		char* partial_line = NULL;
+
+		is_valid = false;
+
+		if (info->line_str[info->current_index] == MINUS_SIGN) {
+			(*dc)++;
+			add_data_to_list(MINUS_SIGN, *dc);
+			info->current_index++;
+		}
+
+		while ((info->current_index < info->line_length) && isdigit(info->line_str[info->current_index])) {
+			(*dc)++;
+			add_data_to_list(info->line_str[info->current_index], *dc);
+			info->current_index++;
+		}
+
+		partial_line = strchr(info->line_str + info->current_index, NUMBER_TOKEN_SEPERATOR);
+
+		if (partial_line != NULL) {
+			info->current_index = partial_line - info->line_str + 1;
+
+			is_valid = true;
+		} else {
+			skip_all_spaces(info);
+		}
+	}
+
+	if (info->current_index < info->line_length) {
+		print_compiler_error(".data syntax is invalid", info);
+		error = true;
 	}
 }
