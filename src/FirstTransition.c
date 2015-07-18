@@ -83,7 +83,6 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 			/* Step 4 */
 			is_symbol = true;
 
-
 			get_word(info, &type);
 
 			if (type == NULL) {
@@ -101,11 +100,7 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 		 * The label is followed by '.data' or '.string'
 		 */
 		if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
-
-			/* Step 6 */
-			if (is_symbol) {
-				process_data(info, dc, label, type);
-			}
+			process_data(info, dc, label, type, is_symbol);
 		}
 		/*
 		 * Step 8.
@@ -116,42 +111,37 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 			if (strcmp(type, EXTERN_OPERATION) == 0) {
 				process_extern(info);
 			}
-		}
-		/*
-		 * Step 11.
-		 */
-		else  {
-			if (is_symbol) {
-				process_operation(info, ic, label);
-			}
-
-			/* Implement 12-13 */
+		} else  {
+			process_operation(info, ic, label, type, is_symbol);
 		}
 
 		free(type);
 	}
 }
 
-void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
-	symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
+void process_data(line_info* info, unsigned int* dc, char* label, char* type, bool is_symbol) {
+	/* Step 6 */
+	if (is_symbol) {
+		symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
 
-	if (p_symbol != NULL) {
-		/* Step 6 */
-		add_symbol_to_list(p_symbol);
-
-		skip_all_spaces(info);
-
-		/* Step 7 */
-		if (info->current_index > info->line_length) {
-			print_compiler_error("Any data instruction must be followed by data initialization", info);
-			error = true;
-		} else if (strcmp(type, STRING_OPERATION) == 0) {
-			process_string(info, dc);
-		} else {
-			process_numbers(info, dc);
+		if (p_symbol != NULL) {
+			add_symbol_to_list(p_symbol);
 		}
+	}
 
+	skip_all_spaces(info);
 
+	/*
+	 * Step 7.
+	 * Extract data according to type
+	 */
+	if (info->current_index > info->line_length) {
+		print_compiler_error("Any data instruction must be followed by data initialization", info);
+		error = true;
+	} else if (strcmp(type, STRING_OPERATION) == 0) {
+		process_string(info, dc);
+	} else {
+		process_numbers(info, dc);
 	}
 }
 
@@ -171,14 +161,29 @@ void process_extern(line_info* info) {
 	}
 }
 
-void process_operation(line_info* info, unsigned int* ic, char* label) {
-	symbol_node_ptr p_symbol = create_symbol(label, 0, false, false);
+void process_operation(line_info* info, unsigned int* ic, char* label, char* type, bool is_symbol) {
+	char* operation = NULL;
+	int operation_counter;
 
-	if (p_symbol == NULL) {
-		add_symbol_to_list(p_symbol);
+	/* Step 11 */
+	if (is_symbol) {
+		symbol_node_ptr p_symbol = create_symbol(label, 0, false, false);
 
-		/* TODO: implement 12-13 phase in algo */
+		if (p_symbol != NULL) {
+			add_symbol_to_list(p_symbol);
+		}
 	}
+
+	/* Step 12 */
+	get_operation(type, &operation, &operation_counter);
+
+	if (is_valid_operation(operation)) {
+
+	} else {
+		/* TODO: invalid operation error */
+	}
+
+
 }
 
 void process_string(line_info* info, unsigned int* dc) {
