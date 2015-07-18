@@ -26,35 +26,32 @@ bool error = false;
  * Executes the first transition of the assembly compiler
  */
 void execute_first_transition(FILE* pFile, char* file_name) {
-	unsigned int IC = 0;
-	unsigned int DC = 0;
+	unsigned int IC;
+	unsigned int DC;
 	int line_number = 0;
-	char* line = (char*)malloc(sizeof(char) * MAX_LINE_LENGTH);
+	char line[MAX_LINE_LENGTH];
 
 	if (line == NULL) {
-		/* TODO: return error code */
-		return;
+		/* TODO: bad alloc */
 	}
 
+	/* Step 1 */
+	IC = 0;
+	DC = 0;
+
 	while (!feof(pFile)) {
+		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
-			line_number++;
+			line_info* info = create_line_info(file_name, ++line_number, line);
 
-			line_info info;
-			info.current_index = 0;
-			info.line_number = line_number;
-			info.line_str = line;
-			info.file_name = file_name;
-			info.line_length = strlen(line);
+			if (info != NULL) {
+				process_line(info, &IC, &DC);
 
-			process_line(&info, &IC, &DC);
+				free(info);
+			}
 		} else {
 			/*TODO: error */
 		}
-	}
-
-	if (line != NULL) {
-		free(line);
 	}
 }
 
@@ -76,10 +73,16 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 			return;
 		}
 
-		/* The word is followed by ':'. It must be a label */
+		/*
+		 * Step 3.
+		 * The word is followed by ':'. It must be a label.
+		 */
 		if (info->line_str[info->current_index] == LABEL_COLON) {
-			is_symbol = true;
 			info->current_index++;
+
+			/* Step 4 */
+			is_symbol = true;
+
 
 			get_word(info, &type);
 
@@ -93,22 +96,36 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 			type = label;
 		}
 
-		/* The label is followed by '.data' or '.string' */
+		/*
+		 * Step 5.
+		 * The label is followed by '.data' or '.string'
+		 */
 		if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
 
+			/* Step 6 */
 			if (is_symbol) {
 				process_data(info, dc, label, type);
 			}
 		}
-		/* The label is followed by '.extern'*/
-		else if (strcmp(type, EXTERN_OPERATION) == 0){
-			process_extern(info);
+		/*
+		 * Step 8.
+		 * The label is followed by '.extern' or '.entry'
+		 */
+		else if ((strcmp(type, EXTERN_OPERATION) == 0) || (strcmp(type, ENTRY_OPERATION) == 0)) {
+			/* Step 9 */
+			if (strcmp(type, EXTERN_OPERATION) == 0) {
+				process_extern(info);
+			}
 		}
-		/* The label isn't followed by '.entry'. Therefore it is an operation */
-		else if (strcmp(type, ENTRY_OPERATION) != 0) {
+		/*
+		 * Step 11.
+		 */
+		else  {
 			if (is_symbol) {
 				process_operation(info, ic, label);
 			}
+
+			/* Implement 12-13 */
 		}
 
 		free(type);
@@ -119,8 +136,12 @@ void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
 	symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
 
 	if (p_symbol != NULL) {
+		/* Step 6 */
+		add_symbol_to_list(p_symbol);
+
 		skip_all_spaces(info);
 
+		/* Step 7 */
 		if (info->current_index > info->line_length) {
 			print_compiler_error("Any data instruction must be followed by data initialization", info);
 			error = true;
@@ -130,7 +151,7 @@ void process_data(line_info* info, unsigned int* dc, char* label, char* type) {
 			process_numbers(info, dc);
 		}
 
-		add_symbol_to_list(p_symbol);
+
 	}
 }
 
