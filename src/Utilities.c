@@ -61,3 +61,19 @@ void get_word(line_info* info, char** word)
 		info->current_index = word_end_index + 1;
 	}
 }
+
+line_info* create_line_info(char* file_name, int line_number, char* line_str) {
+	line_info* info = (line_info*)malloc(sizeof(line_info));
+
+	if (info == NULL) {
+		/* TODO: bad alloc */
+	} else {
+		info->current_index = 0;
+		info->file_name = file_name;
+		info->line_number = line_number;
+		info->line_str = line_str;
+		info->line_length = strlen(line_str);
+	}
+
+	return info;
+}
