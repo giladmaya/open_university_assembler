@@ -9,8 +9,12 @@
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>
+#include <stdbool.h>
 #include "Types.h"
 #include "Consts.h"
+#include "Utilities.h"
+
+operation_node_ptr p_operation_head = NULL;
 
 void print_compiler_error(char* message, line_info* info) {
 	fprintf(stderr, "File: %s Line: %d Error: %s", info->file_name, info->line_number, message);
@@ -76,4 +80,84 @@ line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 	}
 
 	return info;
+}
+
+void get_operation(char* word, char** operation, int* counter) {
+	int i = 0;
+	int word_length = strlen(word);
+
+	while ((i < word_length) && isalpha(word[i])) {
+		i++;
+	}
+
+	*operation = (char*)malloc(sizeof(char) * (i + 1));
+
+	if (*operation == NULL) {
+		/* TODO: bad alloc */
+	} else {
+		strncpy(*operation, word, i);
+		(*operation)[i] = '\0';
+
+		*counter = atoi(word + i);
+	}
+}
+
+bool is_valid_operation(char* operation) {
+	operation_node_ptr p_current;
+
+	if (p_operation_head == NULL) {
+		init_operation_list();
+	}
+
+	p_current = p_operation_head;
+
+	while (p_current != NULL) {
+		if (strcmp(p_current->data.name, operation) == 0) {
+			return true;
+		}
+
+		p_current = p_current->next;
+	}
+
+	return false;
+}
+
+void init_operation_list() {
+	int op_code = 0;
+
+	add_operation_to_list(MOV_OPERATION,op_code++);
+	add_operation_to_list(CMP_OPERATION,op_code++);
+	add_operation_to_list(ADD_OPERATION,op_code++);
+	add_operation_to_list(SUB_OPERATION,op_code++);
+	add_operation_to_list(NOT_OPERATION,op_code++);
+	add_operation_to_list(CLR_OPERATION,op_code++);
+	add_operation_to_list(LEA_OPERATION,op_code++);
+	add_operation_to_list(INC_OPERATION,op_code++);
+	add_operation_to_list(DEC_OPERATION,op_code++);
+	add_operation_to_list(JMP_OPERATION,op_code++);
+	add_operation_to_list(BNE_OPERATION,op_code++);
+	add_operation_to_list(RED_OPERATION,op_code++);
+	add_operation_to_list(PRN_OPERATION,op_code++);
+	add_operation_to_list(JSR_OPERATION,op_code++);
+	add_operation_to_list(RTS_OPERATION,op_code++);
+	add_operation_to_list(STOP_OPERATION,op_code++);
+}
+
+void add_operation_to_list(char* name, unsigned int code) {
+	operation_node_ptr p_new = (operation_node_ptr)malloc(sizeof(operation_node));
+
+	if (p_new == NULL) {
+		/* Todo: bad alloc */
+	} else {
+		p_new->data.name = name;
+		p_new->data.code = code;
+		p_new->next = NULL;
+
+		if (p_operation_head == NULL) {
+			p_operation_head = p_new;
+		} else {
+			p_new->next = p_operation_head;
+			p_operation_head = p_new;
+		}
+	}
 }

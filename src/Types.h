@@ -63,4 +63,16 @@ typedef struct line_info {
 	char* file_name;
 } line_info;
 
+typedef struct operation {
+	char* name;
+	unsigned int code;
+} operation;
+
+typedef struct operation_node* operation_node_ptr;
+
+typedef struct operation_node {
+	operation data;
+	operation_node_ptr next;
+} operation_node;
+
 #endif /* TYPES_H_ */
