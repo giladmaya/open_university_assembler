@@ -21,6 +21,8 @@ void process_string(line_info* info, unsigned int* dc);
 void process_numbers(line_info* info, unsigned int* dc);
 
 void process_operation(line_info* info,unsigned int* ic, char* label, char* type, bool is_symbol);
+int get_operation_size(line_info* info, operation* operation, int times);
+
 void process_extern(line_info* info);
 
 #endif /* FIRSTTRANSITION_H_ */

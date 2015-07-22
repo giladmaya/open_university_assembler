@@ -11,6 +11,7 @@
 #include "Utilities.h"
 #include "SymbolTable.h"
 #include "Data.h"
+#include "Enums.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -21,6 +22,8 @@
  * Global variables
  */
 bool error = false;
+ADDRESS_METHOD last_operand_method;
+bool is_first_operation = true;
 
 /*
  * Executes the first transition of the assembly compiler
@@ -42,17 +45,21 @@ void execute_first_transition(FILE* pFile, char* file_name) {
 	while (!feof(pFile)) {
 		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
-			line_info* info = create_line_info(file_name, ++line_number, line);
+			if (!is_empty_or_comment(line)) {
+				line_info* info = create_line_info(file_name, ++line_number, line);
 
-			if (info != NULL) {
-				process_line(info, &IC, &DC);
+				if (info != NULL) {
+					process_line(info, &IC, &DC);
 
-				free(info);
+					free(info);
+				}
 			}
 		} else {
 			/*TODO: error */
 		}
 	}
+
+	printf("IC: %d, DC: %d", IC, DC);
 }
 
 void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
@@ -60,61 +67,42 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 	char* type = NULL;
 	bool is_symbol = false;
 
-	get_word(info, &label);
+	label = get_label(info);
 
-	/* The line isn't empty*/
+	/*
+	 * Step 3
+	 * The first field is a label
+	 */
 	if (label != NULL) {
-		/* This is a line with a single word */
-		if (info->current_index == info->line_length) {
-			print_compiler_error("Invalid syntax. A single word without any instruction or operation", info);
-			error = true;
-			free(label);
+		/* Step 4 */
+		is_symbol = true;
+	}
 
-			return;
+	get_next_word(info, &type, true);
+
+	/*
+	 * Step 5
+	 */
+	if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
+		process_data(info, dc, label, type, is_symbol);
+	}
+	/*
+	 * Step 8
+	 */
+	else if ((strcmp(type, EXTERN_OPERATION) == 0) || (strcmp(type, ENTRY_OPERATION) == 0)) {
+		/* Step 9 */
+		if (strcmp(type, EXTERN_OPERATION) == 0) {
+			process_extern(info);
 		}
+	}
+	/*
+	 * Step 11
+	 */
+	else  {
+		process_operation(info, ic, label, type, is_symbol);
+	}
 
-		/*
-		 * Step 3.
-		 * The word is followed by ':'. It must be a label.
-		 */
-		if (info->line_str[info->current_index] == LABEL_COLON) {
-			info->current_index++;
-
-			/* Step 4 */
-			is_symbol = true;
-
-			get_word(info, &type);
-
-			if (type == NULL) {
-				print_compiler_error("A label without any instruction or operation after it", info);
-				error = true;
-
-				return;
-			}
-		} else {
-			type = label;
-		}
-
-		/*
-		 * Step 5.
-		 * The label is followed by '.data' or '.string'
-		 */
-		if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
-			process_data(info, dc, label, type, is_symbol);
-		}
-		/*
-		 * Step 8.
-		 * The label is followed by '.extern' or '.entry'
-		 */
-		else if ((strcmp(type, EXTERN_OPERATION) == 0) || (strcmp(type, ENTRY_OPERATION) == 0)) {
-			/* Step 9 */
-			if (strcmp(type, EXTERN_OPERATION) == 0) {
-				process_extern(info);
-			}
-		} else  {
-			process_operation(info, ic, label, type, is_symbol);
-		}
-
+	if (type != NULL) {
 		free(type);
 	}
 }
@@ -150,7 +138,7 @@ void process_extern(line_info* info) {
 
 	char* extern_name = NULL;
 
-	get_word(info, &extern_name);
+	get_next_word(info, &extern_name, true);
 
 	if (extern_name != NULL) {
 		p_symbol = create_symbol(extern_name, 0, true, true);
@@ -162,7 +150,7 @@ void process_extern(line_info* info) {
 }
 
 void process_operation(line_info* info, unsigned int* ic, char* label, char* type, bool is_symbol) {
-	char* operation = NULL;
+	char* operation_name = NULL;
 	int operation_counter;
 
 	/* Step 11 */
@@ -174,16 +162,89 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 		}
 	}
 
-	/* Step 12 */
-	get_operation(type, &operation, &operation_counter);
-
-	if (is_valid_operation(operation)) {
-
+	if (info->line_length > OPERATION_LINE_MAX_LENGTH) {
+		print_compiler_error("Operation line is too long", info);
+		error = true;
 	} else {
-		/* TODO: invalid operation error */
+		operation* operation_info;
+
+		/* Step 12 */
+		get_operation(type, &operation_name, &operation_counter);
+
+		operation_info = get_operation_info(operation_name);
+
+		if (operation_info != NULL) {
+			int length = get_operation_size(info, operation_info, operation_counter);
+			*ic += length;
+		} else {
+			print_compiler_error("Operation code doesn't exist", info);
+			error = true;
+		}
+	}
+}
+
+int get_operation_size(line_info* info, operation* operation, int times) {
+	int size = 1;
+
+	/* Todo: check valid addressing modes */
+	if (operation->operands_number > 0) {
+		char* first_operand;
+		ADDRESS_METHOD first_operand_method;
+
+		first_operand = get_next_operand(info);
+		first_operand_method = get_operand_method(first_operand);
+
+		if (first_operand_method == COPY_PREVIOUS) {
+			if (!is_first_operation) {
+				first_operand_method = last_operand_method;
+			} else {
+				print_compiler_error("Using Copy-Previous address method on first operation", info);
+				error = true;
+			}
+		}
+
+		if (operation->operands_number == 1) {
+			size++;
+		} else {
+			char* second_operand;
+			ADDRESS_METHOD second_operand_method;
+
+			/* Todo: check bounds */
+			while (info->line_str[info->current_index] != OPERAND_SEPERATOR) {
+				info->current_index++;
+			}
+
+			info->current_index++;
+
+			second_operand = get_next_operand(info);
+			second_operand_method = get_operand_method(second_operand);
+
+			if (second_operand_method == COPY_PREVIOUS) {
+				if (!is_first_operation) {
+					second_operand_method = last_operand_method;
+				} else {
+					print_compiler_error("Using Copy-Previous address method on first operation", info);
+					error = true;
+				}
+			}
+
+			/* The operands share one memory word */
+			if ((first_operand_method == DIRECT_REGISTER) && (second_operand_method == DIRECT_REGISTER)) {
+				size++;
+			}
+			/* Each operand gets its own memory word */
+			else {
+				size += 2;
+			}
+		}
+
+		if ((!error) && is_first_operation) {
+			last_operand_method = first_operand_method;
+			is_first_operation = false;
+		}
 	}
 
-
+	return size * times;
 }
 
 void process_string(line_info* info, unsigned int* dc) {
@@ -203,14 +264,14 @@ void process_string(line_info* info, unsigned int* dc) {
 				break;
 			} else if (token != QUOTATION) {
 				(*dc)++;
-				add_data_to_list(token, *dc);
+				add_string_data_to_list(token, *dc);
 			}
 
 			data_index++;
 		}
 
 		(*dc)++;
-		add_data_to_list(STRING_DATA_END, *dc);
+		add_string_data_to_list(STRING_DATA_END, *dc);
 	}
 }
 
@@ -220,20 +281,35 @@ void process_numbers(line_info* info, unsigned int* dc) {
 
 	while ((info->current_index < info->line_length) && is_valid) {
 		char* partial_line = NULL;
+		char* number_str = NULL;
+		int number_str_length;
+		int number;
+		int number_end_index = info->current_index;
 
 		is_valid = false;
 
-		if (info->line_str[info->current_index] == MINUS_SIGN) {
-			(*dc)++;
-			add_data_to_list(MINUS_SIGN, *dc);
-			info->current_index++;
+		if ((info->line_str[info->current_index] == MINUS_SIGN) ||
+				(info->line_str[info->current_index] == PLUS_SIGN)){
+			number_end_index++;
 		}
 
-		while ((info->current_index < info->line_length) && isdigit(info->line_str[info->current_index])) {
-			(*dc)++;
-			add_data_to_list(info->line_str[info->current_index], *dc);
-			info->current_index++;
+		while ((number_end_index < info->line_length) && isdigit(info->line_str[number_end_index])) {
+			number_end_index++;
 		}
+
+		number_str_length = number_end_index - info->current_index;
+
+		number_str = (char*)malloc(sizeof(char) * (number_str_length + 1));
+		strncpy(number_str, info->line_str + info->current_index, number_str_length);
+		number_str[number_str_length] = '\0';
+
+		number = atoi(number_str);
+
+		add_numeric_data_to_list(number, (*dc)++);
+
+		info->current_index = number_end_index;
+
+		free(number_str);
 
 		partial_line = strchr(info->line_str + info->current_index, NUMBER_TOKEN_SEPERATOR);
 
