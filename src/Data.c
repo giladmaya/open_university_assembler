@@ -22,17 +22,32 @@ void add_data_node_to_list(data_node_ptr p_new_data) {
 	}
 }
 
-void add_data_to_list(char token, unsigned int address) {
+void add_string_data_to_list(char data, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)malloc(sizeof(data_node));
 
 	if (p_data == NULL) {
 		/* TODO: bad alloc */
 	} else {
-		p_data->value.value = token;
+		p_data->value.value = data;
+		p_data->value.is_number = false;
 		p_data->value.address = address;
 		p_data->next = NULL;
 
 		add_data_node_to_list(p_data);
 	}
+}
 
+void add_numeric_data_to_list(int number, unsigned int address) {
+	data_node_ptr p_data = (data_node_ptr)malloc(sizeof(data_node));
+
+	if (p_data == NULL) {
+		/* TODO: bad alloc */
+	} else {
+		p_data->value.number = number;
+		p_data->value.is_number = true;
+		p_data->value.address = address;
+		p_data->next = NULL;
+
+		add_data_node_to_list(p_data);
+	}
 }

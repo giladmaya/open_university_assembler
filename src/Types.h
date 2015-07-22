@@ -8,6 +8,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+#include <stdbool.h>
+
 /*
  * A symbol in the code.
  * Can be an instruction or an operation.
@@ -45,6 +47,8 @@ typedef struct
 
 typedef struct data {
 	char value;
+	int number;
+	bool is_number;
 	unsigned int address;
 } data;
 
@@ -66,6 +70,7 @@ typedef struct line_info {
 typedef struct operation {
 	char* name;
 	unsigned int code;
+	int operands_number;
 } operation;
 
 typedef struct operation_node* operation_node_ptr;
