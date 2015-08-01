@@ -13,5 +13,7 @@
 
 void add_symbol_to_list(symbol_node_ptr p_new_symbol);
 symbol_node_ptr create_symbol(char* name, int address, bool is_extern, bool is_instruction);
+symbol_node_ptr search_symbol(char* symbol_name);
+void calculate_final_data_address(int ic_length);
 
 #endif /* SYMBOLTABLE_H_ */

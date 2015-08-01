@@ -7,6 +7,7 @@ C_SRCS += \
 ../src/Compiler.c \
 ../src/Data.c \
 ../src/FirstTransition.c \
+../src/SecondTransition.c \
 ../src/SymbolTable.c \
 ../src/Utilities.c 
 
@@ -14,6 +15,7 @@ OBJS += \
 ./src/Compiler.o \
 ./src/Data.o \
 ./src/FirstTransition.o \
+./src/SecondTransition.o \
 ./src/SymbolTable.o \
 ./src/Utilities.o 
 
@@ -21,6 +23,7 @@ C_DEPS += \
 ./src/Compiler.d \
 ./src/Data.d \
 ./src/FirstTransition.d \
+./src/SecondTransition.d \
 ./src/SymbolTable.d \
 ./src/Utilities.d 
 

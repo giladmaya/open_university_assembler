@@ -59,7 +59,7 @@ void execute_first_transition(FILE* pFile, char* file_name) {
 		}
 	}
 
-	printf("IC: %d, DC: %d", IC, DC);
+	calculate_final_data_address(IC);
 }
 
 void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
@@ -155,7 +155,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 
 	/* Step 11 */
 	if (is_symbol) {
-		symbol_node_ptr p_symbol = create_symbol(label, 0, false, false);
+		symbol_node_ptr p_symbol = create_symbol(label, *ic, false, false);
 
 		if (p_symbol != NULL) {
 			add_symbol_to_list(p_symbol);
@@ -238,8 +238,9 @@ int get_operation_size(line_info* info, operation* operation, int times) {
 			}
 		}
 
-		if ((!error) && is_first_operation) {
-			last_operand_method = first_operand_method;
+		last_operand_method = first_operand_method;
+
+		if (is_first_operation) {
 			is_first_operation = false;
 		}
 	}

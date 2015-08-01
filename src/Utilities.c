@@ -271,11 +271,52 @@ ADDRESS_METHOD get_operand_method(char* operand) {
 bool is_register(char* operand, int length) {
 	int digit;
 
-	if ((length != 2) || (operand[0] != REGISTER_FIRST_TOKEN) || (!isdigit(operand[2]))) {
+	if ((length != 2) || (toupper(operand[0]) != REGISTER_FIRST_TOKEN) || (!isdigit(operand[1]))) {
 		return false;
 	}
 
 	digit = atoi(operand + 1);
 
 	return (digit < REGISTERS_COUNT) && (digit >= 0);
+}
+
+char* convert_base10_to_target_base(unsigned int base10_number, int target_base) {
+	char* result = NULL;
+	int result_length;
+	int whole = base10_number;
+	int remainder = 0;
+
+	result = (char*)malloc(sizeof(char) * 1);
+
+	if (result == NULL) {
+		/* TODO: bad alloc */
+	} else {
+		result[0] = END_OF_STRING;
+		result_length = 1;
+	}
+
+	while (whole != 0) {
+		char* current_token = NULL;
+		int temp;
+
+		temp = whole / target_base;
+		remainder = whole - temp * target_base;
+		whole = temp;
+
+		current_token = (char*)malloc(sizeof(char) * (result_length + 1));
+
+		if (current_token == NULL) {
+			/*TODO: bad alloc */
+		} else {
+			current_token[0] = '0' + remainder;
+			current_token[1] = END_OF_STRING;
+
+			strcat(current_token, result);
+
+			free(result);
+			result = current_token;
+		}
+	}
+
+	return result;
 }
