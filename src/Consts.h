@@ -10,7 +10,12 @@
 
 #define MAX_LINE_LENGTH 200
 
+#define TARGET_BASE 4
+
+#define ADDRESS_START 100
+
 #define END_OF_LINE '\n'
+#define END_OF_STRING '\0'
 #define COMMENT ';'
 
 #define QUOTATION '\"'
