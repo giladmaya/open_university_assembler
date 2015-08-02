@@ -27,8 +27,7 @@ typedef struct symbol_node* symbol_node_ptr;
 /*
  * A symbol node in the symbol table.
  */
-typedef struct symbol_node
-{
+typedef struct symbol_node {
 	symbol data;
 	symbol_node_ptr next;
 } symbol_node;
@@ -36,14 +35,19 @@ typedef struct symbol_node
 /*
  * An instruction. The instruction is built out of 12 bits;
  */
-typedef struct
-{
+typedef struct {
 	unsigned int era : 2;
 	unsigned int target_operand_address_method : 2;
 	unsigned int source_operand_address_method : 2;
 	unsigned int op_code : 4;
 	unsigned int group : 2;
-} instruction;
+	unsigned int rest;
+} coded_operation;
+
+typedef union {
+	coded_operation operation_bits;
+	unsigned int operation_value;
+} coded_operation_union;
 
 typedef struct data {
 	char value;
@@ -70,7 +74,7 @@ typedef struct line_info {
 typedef struct operation {
 	char* name;
 	unsigned int code;
-	int operands_number;
+	unsigned int operands_number;
 } operation;
 
 typedef struct operation_node* operation_node_ptr;
