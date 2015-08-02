@@ -27,4 +27,10 @@ typedef enum ERROR_CODES
 	COMPILER_BAD_ALLOCATION
 } ERROR_CODES;
 
+typedef enum {
+	ABSOLUTE = 0,
+	EXTERNAL = 1,
+	RELOCATABLE = 2
+} ERA;
+
 #endif /* ENUMS_H_ */
