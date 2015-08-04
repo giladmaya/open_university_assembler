@@ -8,6 +8,10 @@
 #ifndef CONSTS_H_
 #define CONSTS_H_
 
+#define NO_OPERANDS 0
+#define ONE_OPERAND 1
+#define TWO_OPERANDS 2
+
 #define MAX_LINE_LENGTH 200
 
 #define TARGET_BASE 4

@@ -88,8 +88,10 @@ typedef struct operation_node {
 typedef struct {
 	operation_information* operation;
 	int times;
-	ADDRESS_METHOD source_method;
-	ADDRESS_METHOD target_method;
+	char* source_operand;
+	char* target_operand;
+	ADDRESS_METHOD source_operand_address_method;
+	ADDRESS_METHOD target_operand_address_method;
 } operation;
 
 #endif /* TYPES_H_ */
