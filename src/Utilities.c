@@ -130,22 +130,22 @@ operation_information* get_operation_info(char* operation) {
 void init_operation_list() {
 	int op_code = 0;
 
-	add_operation_to_list(MOV_OPERATION, op_code++, 2);
-	add_operation_to_list(CMP_OPERATION, op_code++, 2);
-	add_operation_to_list(ADD_OPERATION, op_code++, 2);
-	add_operation_to_list(SUB_OPERATION, op_code++, 2);
-	add_operation_to_list(NOT_OPERATION, op_code++, 1);
-	add_operation_to_list(CLR_OPERATION, op_code++, 1);
-	add_operation_to_list(LEA_OPERATION, op_code++, 2);
-	add_operation_to_list(INC_OPERATION, op_code++, 1);
-	add_operation_to_list(DEC_OPERATION, op_code++, 1);
-	add_operation_to_list(JMP_OPERATION, op_code++, 1);
-	add_operation_to_list(BNE_OPERATION, op_code++, 1);
-	add_operation_to_list(RED_OPERATION, op_code++, 1);
-	add_operation_to_list(PRN_OPERATION, op_code++, 1);
-	add_operation_to_list(JSR_OPERATION, op_code++, 1);
-	add_operation_to_list(RTS_OPERATION, op_code++, 0);
-	add_operation_to_list(STOP_OPERATION, op_code++, 0);
+	add_operation_to_list(MOV_OPERATION, op_code++, TWO_OPERANDS);
+	add_operation_to_list(CMP_OPERATION, op_code++, TWO_OPERANDS);
+	add_operation_to_list(ADD_OPERATION, op_code++, TWO_OPERANDS);
+	add_operation_to_list(SUB_OPERATION, op_code++, TWO_OPERANDS);
+	add_operation_to_list(NOT_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(CLR_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(LEA_OPERATION, op_code++, TWO_OPERANDS);
+	add_operation_to_list(INC_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(DEC_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(JMP_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(BNE_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(RED_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(PRN_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(JSR_OPERATION, op_code++, ONE_OPERAND);
+	add_operation_to_list(RTS_OPERATION, op_code++, NO_OPERANDS);
+	add_operation_to_list(STOP_OPERATION, op_code++, NO_OPERANDS);
 }
 
 void add_operation_to_list(char* name, unsigned int code, int operands) {
@@ -326,7 +326,11 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base)
 }
 
 char* allocate_string(int string_length) {
-	char* result = (char*)malloc(sizeof(char) * (string_length + 1));
+	return (char*)allocate_memory(sizeof(char) * (string_length + 1));
+}
+
+void* allocate_memory(int bytes) {
+	void* result = (void*)malloc(bytes);
 
 	if (result == NULL) {
 		print_runtime_error("Could not allocate memory. Exit program");
@@ -336,5 +340,16 @@ char* allocate_string(int string_length) {
 	return result;
 }
 
+bool is_end_of_data_in_line(line_info* info) {
+	bool is_end = true;
+	int i;
 
+	for (i = info->current_index; i < info->line_length; i++) {
+		if (!isspace(info->line_str[i])) {
+			is_end = false;
+			break;
+		}
+	}
 
+	return is_end;
+}
