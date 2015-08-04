@@ -152,7 +152,7 @@ void process_and_write_operation(line_info* info, char* word, unsigned int* ic) 
 	char* operation_name = NULL;
 	char* base4_value;
 	int operation_counter = 0;
-	operation* operation_info;
+	operation_information* operation_info;
 
 	get_operation(word, &operation_name, &operation_counter);
 
@@ -178,7 +178,12 @@ void process_and_write_operation(line_info* info, char* word, unsigned int* ic) 
 			second_operand_method = get_operand_method(second_operand);
 
 			operation_bits.target_operand_address_method = second_operand_method;
+		} else {
+			operation_bits.source_operand_address_method = IMMEDIATE;
 		}
+	} else {
+		operation_bits.source_operand_address_method = IMMEDIATE;
+		operation_bits.target_operand_address_method = IMMEDIATE;
 	}
 
 	operation_bits.era = ABSOLUTE;
