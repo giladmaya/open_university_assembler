@@ -14,10 +14,14 @@
 #include "Consts.h"
 #include "Utilities.h"
 
-operation_node_ptr p_operation_head = NULL;
+operation_information_node_ptr p_operation_head = NULL;
 
 void print_compiler_error(char* message, line_info* info) {
 	fprintf(stderr, "Error: %s, File %s Line %d \n", message, info->file_name, info->line_number);
+}
+
+void print_runtime_error(char* message) {
+	fprintf(stderr, "Error: %s \n", message);
 }
 
 void skip_all_spaces(line_info* info) {
@@ -103,8 +107,8 @@ void get_operation(char* word, char** operation, int* counter) {
 	}
 }
 
-operation* get_operation_info(char* operation) {
-	operation_node_ptr p_current;
+operation_information* get_operation_info(char* operation) {
+	operation_information_node_ptr p_current;
 
 	if (p_operation_head == NULL) {
 		init_operation_list();
@@ -145,7 +149,7 @@ void init_operation_list() {
 }
 
 void add_operation_to_list(char* name, unsigned int code, int operands) {
-	operation_node_ptr p_new = (operation_node_ptr)malloc(sizeof(operation_node));
+	operation_information_node_ptr p_new = (operation_information_node_ptr)malloc(sizeof(operation_information_node));
 
 	if (p_new == NULL) {
 		/* Todo: bad alloc */
@@ -316,6 +320,17 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base)
 			free(result);
 			result = current_token;
 		}
+	}
+
+	return result;
+}
+
+char* allocate_string(int string_length) {
+	char* result = (char*)malloc(sizeof(char) * (string_length + 1));
+
+	if (result == NULL) {
+		print_runtime_error("Could not allocate memory. Exit program");
+		exit(0);
 	}
 
 	return result;
