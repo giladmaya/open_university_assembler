@@ -8,6 +8,9 @@
 #ifndef CONSTS_H_
 #define CONSTS_H_
 
+#define MAX_ARGC 2
+#define MAX_FILE_PATH 100
+
 #define MAX_LINE_LENGTH 200
 
 #define TARGET_BASE 4
