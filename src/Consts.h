@@ -34,6 +34,8 @@
 #define REGISTER_FIRST_TOKEN 'R'
 #define REGISTERS_COUNT 8
 
+#define INVALID_OPEARTION_COUNTER -1
+
 /*
  * Instruction
  */

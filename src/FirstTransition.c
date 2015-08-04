@@ -166,7 +166,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 		print_compiler_error("Operation line is too long", info);
 		error = true;
 	} else {
-		operation* operation_info;
+		operation_information* operation_info;
 
 		/* Step 12 */
 		get_operation(type, &operation_name, &operation_counter);
@@ -183,7 +183,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 	}
 }
 
-int get_operation_size(line_info* info, operation* operation, int times) {
+int get_operation_size(line_info* info, operation_information* operation, int times) {
 	int size = 1;
 
 	/* Todo: check valid addressing modes */
