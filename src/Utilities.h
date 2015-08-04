@@ -16,6 +16,7 @@ void print_compiler_error(char* message, line_info* info);
 void print_runtime_error(char* message);
 
 char* allocate_string(int string_length);
+void* allocate_memory(int bytes);
 
 void skip_all_spaces(line_info* info);
 
@@ -24,6 +25,7 @@ char* get_label(line_info* info);
 
 line_info* create_line_info(char* file_name, int line_number, char* line_str);
 bool is_empty_or_comment(char* line);
+bool is_end_of_data_in_line(line_info* info);
 
 void get_operation(char* word, char** operation, int* counter);
 char* get_next_operand(line_info* info);
@@ -35,5 +37,7 @@ void init_operation_list();
 void add_operation_to_list(char* name, unsigned int code, int operands);
 
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base);
+
+
 
 #endif /* UTILITIES_H_ */
