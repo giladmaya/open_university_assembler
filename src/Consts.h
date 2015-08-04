@@ -4,10 +4,15 @@
  *  Created on: Jul 14, 2015
  *      Author: student
  */
-#include <limits.h>
 
 #ifndef CONSTS_H_
 #define CONSTS_H_
+
+#include <limits.h>
+
+#define NO_OPERANDS 0
+#define ONE_OPERAND 1
+#define TWO_OPERANDS 2
 
 #define FILE_EXT ".as"
 

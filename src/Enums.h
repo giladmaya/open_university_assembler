@@ -13,6 +13,7 @@
  */
 typedef enum ADDRESS_METHOD
 {
+	INVALID = -1,
 	IMMEDIATE = 0,
 	DIRECT = 1,
 	COPY_PREVIOUS = 2,
