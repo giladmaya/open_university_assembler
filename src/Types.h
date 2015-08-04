@@ -71,17 +71,24 @@ typedef struct line_info {
 	char* file_name;
 } line_info;
 
-typedef struct operation {
+typedef struct {
 	char* name;
 	unsigned int code;
 	unsigned int operands_number;
-} operation;
+} operation_information;
 
-typedef struct operation_node* operation_node_ptr;
+typedef struct operation_node* operation_information_node_ptr;
 
 typedef struct operation_node {
-	operation data;
-	operation_node_ptr next;
-} operation_node;
+	operation_information data;
+	operation_information_node_ptr next;
+} operation_information_node;
+
+typedef struct {
+	operation_information* operation;
+	int times;
+	ADDRESS_METHOD source_method;
+	ADDRESS_METHOD target_method;
+} operation;
 
 #endif /* TYPES_H_ */
