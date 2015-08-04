@@ -4,12 +4,12 @@
  *  Created on: Jul 14, 2015
  *      Author: student
  */
+#include <limits.h>
 
 #ifndef CONSTS_H_
 #define CONSTS_H_
 
-#define MAX_ARGC 2
-#define MAX_FILE_PATH 100
+#define FILE_EXT ".as"
 
 #define MAX_LINE_LENGTH 200
 

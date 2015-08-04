@@ -335,3 +335,6 @@ char* allocate_string(int string_length) {
 
 	return result;
 }
+
+
+
