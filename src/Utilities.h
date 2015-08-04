@@ -13,6 +13,10 @@
 #include <stdbool.h>
 
 void print_compiler_error(char* message, line_info* info);
+void print_runtime_error(char* message);
+
+char* allocate_string(int string_length);
+
 void skip_all_spaces(line_info* info);
 
 void get_next_word(line_info* info, char** word, bool skip_spaces);
@@ -26,7 +30,7 @@ char* get_next_operand(line_info* info);
 ADDRESS_METHOD get_operand_method(char* operand);
 bool is_register(char* operand, int length);
 
-operation* get_operation_info(char* operation);
+operation_information* get_operation_info(char* operation);
 void init_operation_list();
 void add_operation_to_list(char* name, unsigned int code, int operands);
 
