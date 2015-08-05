@@ -162,7 +162,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 		}
 	}
 
-	if (info->line_length > OPERATION_LINE_MAX_LENGTH) {
+	if (!is_valid_is_operation_line(info->line_str)) {
 		print_compiler_error("Operation line is too long", info);
 		error = true;
 	} else {
