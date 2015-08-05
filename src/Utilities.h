@@ -40,5 +40,6 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base)
 
 bool is_valid_lable (char* str);
 
+bool is_valid_is_operation_line (char* str);
 
 #endif /* UTILITIES_H_ */
