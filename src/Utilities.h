@@ -38,6 +38,7 @@ void add_operation_to_list(char* name, unsigned int code, int operands);
 
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base);
 
+bool is_valid_lable (char* str);
 
 
 #endif /* UTILITIES_H_ */
