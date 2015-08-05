@@ -42,7 +42,7 @@ typedef struct {
 	unsigned int source_operand_address_method : 2;
 	unsigned int op_code : 4;
 	unsigned int group : 2;
-	unsigned int rest;
+	unsigned int rest : 20;
 } coded_operation;
 
 typedef union {
@@ -93,5 +93,24 @@ typedef struct {
 	ADDRESS_METHOD source_operand_address_method;
 	ADDRESS_METHOD target_operand_address_method;
 } operation;
+
+typedef struct {
+	unsigned int era : 2;
+	unsigned int target_register_address : 5;
+	unsigned int source_register_address : 5;
+	unsigned int rest : 20;
+} register_memory_word;
+
+typedef struct {
+	unsigned int era: 2;
+	unsigned int operand_address : 10;
+	unsigned int rest : 20;
+} non_register_memory_word;
+
+typedef union {
+	register_memory_word register_address;
+	non_register_memory_word non_register_address;
+	unsigned int value;
+} memory_word;
 
 #endif /* TYPES_H_ */

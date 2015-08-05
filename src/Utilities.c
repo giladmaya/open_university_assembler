@@ -353,3 +353,7 @@ bool is_end_of_data_in_line(line_info* info) {
 
 	return is_end;
 }
+
+void skip_label(line_info* info) {
+	get_label(info);
+}

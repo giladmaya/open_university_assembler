@@ -22,6 +22,7 @@ void skip_all_spaces(line_info* info);
 
 void get_next_word(line_info* info, char** word, bool skip_spaces);
 char* get_label(line_info* info);
+void skip_label(line_info* info);
 
 line_info* create_line_info(char* file_name, int line_number, char* line_str);
 bool is_empty_or_comment(char* line);
