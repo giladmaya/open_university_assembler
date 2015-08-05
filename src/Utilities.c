@@ -170,11 +170,14 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 char* get_label(line_info* info) {
 	char* label = NULL;
 
-
 	get_next_word(info,&label,true);
 
 	/* Return a label only if its valid */
 	if (is_valid_lable(label)) {
+		/* Remove ':' token from the string */
+		int length = strlen(label);
+		label[length - 1] = END_OF_STRING;
+
 		return label;
 	} else {
 		/* Reset line pointer */
