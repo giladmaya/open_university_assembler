@@ -10,6 +10,7 @@
 #include "SymbolTable.h"
 #include "Utilities.h"
 #include "Types.h"
+#include "OperationEncoder.h"
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -23,6 +24,8 @@ FILE* p_ent_file = NULL;
 void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	unsigned int IC;
 	int line_number = 0;
+	bool is_first_operation = true;
+	ADDRESS_METHOD previous_address_method = IMMEDIATE;
 	char line[MAX_LINE_LENGTH];
 
 	char* file_name = (char*)malloc(sizeof(char) * (strlen(file_name_without_extension) + 4));
@@ -50,7 +53,7 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
 
 				if (info != NULL) {
-					process_line_transition_two(info, &IC);
+					process_line_transition_two(info, &IC, &is_first_operation, &previous_address_method);
 
 					free(info);
 				}
@@ -73,14 +76,17 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	}
 }
 
-void process_line_transition_two(line_info* info, unsigned int* ic) {
+void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_first, ADDRESS_METHOD* p_prev_method) {
 	char* type = NULL;
+	int index;
 
 	/*
 	 * Step 3
 	 * Skips label if exists
 	 */
-	get_label(info);
+	skip_label(info);
+
+	index = info->current_index;
 
 	get_next_word(info, &type, true);
 
@@ -99,7 +105,8 @@ void process_line_transition_two(line_info* info, unsigned int* ic) {
 		process_and_write_entry(info);
 	}
 	else  {
-		process_and_write_operation(info, type, ic);
+		info->current_index = index;
+		process_and_encode_operation(info, ic, is_first, p_prev_method);
 	}
 
 	if (type != NULL) {
@@ -146,62 +153,25 @@ void process_and_write_entry(line_info* info) {
 	}
 }
 
-void process_and_write_operation(line_info* info, char* word, unsigned int* ic) {
+void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_first, ADDRESS_METHOD* p_prev_address_method) {
 	coded_operation_union coded_op;
 	coded_operation operation_bits;
-	char* operation_name = NULL;
-	char* base4_value;
-	int operation_counter = 0;
-	operation_information* operation_info;
+	int i;
 
-	get_operation(word, &operation_name, &operation_counter);
+	operation* p_decoded_operation = get_operation_data(info, *p_is_first, *p_prev_address_method);
 
-	operation_info = get_operation_info(operation_name);
-
-	operation_bits.group = operation_info->operands_number;
-	operation_bits.op_code = operation_info->code;
-
-	if (operation_info->operands_number > 0) {
-		char* first_operand;
-		ADDRESS_METHOD first_operand_method;
-
-		first_operand = get_next_operand(info);
-		first_operand_method = get_operand_method(first_operand);
-
-		operation_bits.source_operand_address_method = first_operand_method;
-
-		if (operation_info->operands_number == 2) {
-			char* second_operand;
-			ADDRESS_METHOD second_operand_method;
-
-			second_operand = get_next_operand(info);
-			second_operand_method = get_operand_method(second_operand);
-
-			operation_bits.target_operand_address_method = second_operand_method;
-		} else {
-			operation_bits.source_operand_address_method = IMMEDIATE;
-		}
-	} else {
-		operation_bits.source_operand_address_method = IMMEDIATE;
-		operation_bits.target_operand_address_method = IMMEDIATE;
+	if (p_decoded_operation == NULL) {
+		return;
 	}
 
-	operation_bits.era = ABSOLUTE;
-	operation_bits.rest = 0;
+	if (p_decoded_operation->operation->operands_number == NO_OPERANDS) {
+		*p_is_first = true;
+	} else {
+		*p_prev_address_method = p_decoded_operation->source_operand_address_method;
+		*p_is_first = false;
+	}
 
-	coded_op.operation_value = 0;
-	coded_op.operation_bits = operation_bits;
-
-	base4_value = convert_base10_to_target_base(*ic + ADDRESS_START, TARGET_BASE);
-	fputs(base4_value, p_ob_file);
-	fputc(' ', p_ob_file);
-
-	free(base4_value);
-
-	base4_value = convert_base10_to_target_base(coded_op.operation_value, TARGET_BASE);
-
-	fputs(base4_value, p_ob_file);
-	fputc(END_OF_LINE, p_ob_file);
+	encode_operation(p_decoded_operation, ic, p_ob_file);
 }
 
 void process_and_write_extern(line_info* info) {
