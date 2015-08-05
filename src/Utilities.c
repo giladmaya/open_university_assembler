@@ -382,3 +382,17 @@ bool is_valid_lable (char* str) {
 	/* All was fine */
 	return true;
 }
+
+bool is_valid_is_operation_line (char* str) {
+
+	/*
+	 * Make sure that :
+	 * 	1) string is shorter then maximum length
+	 */
+	if (strlen(str) > OPERATION_LINE_MAX_LENGTH) {
+		return false;
+	}
+
+	/* All was fine */
+	return true;
+}
