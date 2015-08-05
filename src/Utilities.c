@@ -353,3 +353,33 @@ bool is_end_of_data_in_line(line_info* info) {
 
 	return is_end;
 }
+
+
+bool is_valid_lable (char* str) {
+	int i;
+	int len = strlen(str);
+
+	/*
+	 * Make sure that :
+	 * 	1) string start's with a letter
+	 * 	2) string end's with end of label token
+	 * 	3) string is shorter then maximum length (excluding the end of label token)
+	 */
+	if (!isalpha(str[0]) || str[len-1] != LABEL_END_TOKEN || strlen(str) - 1 > LABEL_MAX_LENGTH) {
+		return false;
+	}
+
+	/*
+	 * We checked the first and last char's, we check the string length,
+	 * Now we will make sure that the rest are alpha numeric
+	 */
+	for (i = 1; i < len - 1; i++) {
+		printf("i:%d-c:%c\n", i, str[i]);
+		if (!isalnum(str[i])) {
+			return false;
+		}
+	}
+
+	/* All was fine */
+	return true;
+}
