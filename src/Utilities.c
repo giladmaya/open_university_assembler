@@ -42,17 +42,16 @@ void get_next_word(line_info* info, char** word, bool skip_spaces)
 		free(*word);
 	}
 
-	if (skip_spaces)
+	if (skip_spaces) {
 		skip_all_spaces(info);
+	}
 
 	word_end_index  = word_start_index = i = info->current_index;
 
 	for (;i < info->line_length; i++) {
-		if (!isspace(info->line_str[i]) && (info->line_str[i] != LABEL_END_TOKEN)) {
+		if (!isspace(info->line_str[i])) {
 			word_end_index = i;
-		}
-		else
-		{
+		} else {
 			break;
 		}
 	}
@@ -170,36 +169,19 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 
 char* get_label(line_info* info) {
 	char* label = NULL;
-	int i = 1;
 
-	/*
-	 * A label must start on the first index of the line.
-	 * The first token of the label must be a valid alpha letter
-	 */
-	if (isalpha(info->line_str[0])) {
-		while (isalnum(info->line_str[i])) {
-			i++;
-		}
 
-		if (i > MAX_LINE_LENGTH) {
-			print_compiler_error("Invalid label length", info);
-		} else if (info->line_str[i] != LABEL_END_TOKEN) {
-			print_compiler_error("A label must end with a colon", info);
-		} else {
-			label = (char*)malloc(sizeof(char) * (i + 1));
+	get_next_word(info,&label,true);
 
-			if (label == NULL) {
-				/* TODO: bad alloc */
-			} else {
-				strncpy(label, info->line_str, i);
-				label[i] = '\0';
-
-				info->current_index = i + 1;
-			}
-		}
+	/* Return a label only if its valid */
+	if (is_valid_lable(label)) {
+		return label;
+	} else {
+		/* Reset line pointer */
+		info->current_index = 0;
+		return NULL;
 	}
 
-	return label;
 }
 
 bool is_empty_or_comment(char* line) {

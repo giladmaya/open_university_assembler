@@ -44,7 +44,7 @@ int main(int argc, char* argv[]) {
 		strcpy (curr_file, argv[1]);
 		strcat (curr_file, FILE_EXT);
 
-		/* open the file or die*/
+		/* Open the file or die*/
 		p_file = fopen(curr_file, "r");
 		if (p_file == NULL) {
 			print_runtime_error("Could not open source file");
