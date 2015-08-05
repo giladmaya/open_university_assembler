@@ -365,7 +365,7 @@ bool is_valid_lable (char* str) {
 	 * 	2) string end's with end of label token
 	 * 	3) string is shorter then maximum length (excluding the end of label token)
 	 */
-	if (!isalpha(str[0]) || str[len-1] != LABEL_END_TOKEN || strlen(str) - 1 > LABEL_MAX_LENGTH) {
+	if (!isalpha(str[0]) || str[len-1] != LABEL_END_TOKEN || len - 1 > LABEL_MAX_LENGTH) {
 		return false;
 	}
 
@@ -374,7 +374,6 @@ bool is_valid_lable (char* str) {
 	 * Now we will make sure that the rest are alpha numeric
 	 */
 	for (i = 1; i < len - 1; i++) {
-		printf("i:%d-c:%c\n", i, str[i]);
 		if (!isalnum(str[i])) {
 			return false;
 		}
