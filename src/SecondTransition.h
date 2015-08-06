@@ -21,4 +21,6 @@ void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_
 void process_and_write_entry(line_info* info);
 void process_and_write_extern(line_info* info);
 
+void encode_data(unsigned int* ic);
+
 #endif /* SECONDTRANSITION_H_ */

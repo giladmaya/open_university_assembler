@@ -26,7 +26,7 @@
 #include <string.h>
 
 /*
- * Knownn bugs:
+ * Known bugs:
  * 2. Fix encoding of external - Idan
  * 3. Fix weird empty lines
  * 4. Fix encoding of registry
@@ -49,7 +49,7 @@ int main(int argc, char* argv[]) {
 
 		/* Create full file path */
 		curr_file = allocate_string(strlen(argv[i])+strlen(FILE_EXT));
-		strcpy (curr_file, argv[1]);
+		strcpy (curr_file, argv[i]);
 		strcat (curr_file, FILE_EXT);
 
 		/* Open the file or die*/
@@ -63,6 +63,7 @@ int main(int argc, char* argv[]) {
 		execute_second_transition(p_file, argv[i]);
 		fclose(p_file);
 
+		free(curr_file);
 	}
 	
 	exit(0);
