@@ -10,12 +10,10 @@
 
 #include <limits.h>
 
-#define NO_OPERANDS 0
-#define ONE_OPERAND 1
-#define TWO_OPERANDS 2
-
+/* Input code file extension */
 #define FILE_EXT ".as"
 
+/* Length of line in code */
 #define MAX_LINE_LENGTH 200
 
 #define TARGET_BASE 4
