@@ -7,7 +7,7 @@ add1 r2,STR
 mov1 $$,r4
 LOOP: jmp1 L3
 prn1 #-5
-sub1 $$, r4
+sub1 $$, r1
 inc1 r0
 mov2 $$,r3
 bne1 L3

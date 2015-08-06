@@ -38,7 +38,7 @@ symbol_node_ptr create_symbol(char* name, unsigned int address, bool is_extern, 
 		p_node->data.name = name;
 		p_node->data.is_external = is_extern;
 		p_node->data.is_instruction = is_instruction;
-		p_node->data.address = address + ADDRESS_START;
+		p_node->data.address = address;
 	}
 
 	return p_node;
@@ -59,7 +59,7 @@ void calculate_final_data_address(int ic_length) {
 
 	while (p_current != NULL) {
 		if ((p_current->data.is_instruction) && (!p_current->data.is_external)) {
-			p_current->data.address += ic_length;
+			p_current->data.address += ic_length + ADDRESS_START;
 		}
 
 		p_current = p_current->next;

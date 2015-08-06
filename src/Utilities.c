@@ -416,3 +416,14 @@ bool is_valid_is_operation_line (char* str) {
 	/* All was fine */
 	return true;
 }
+
+void replace_content(char** current_string, char* new_string) {
+	char* temp = allocate_string(strlen(new_string));
+
+	if (*current_string != NULL) {
+		free(*current_string);
+	}
+
+	*current_string = temp;
+	strcpy(*current_string, new_string);
+}

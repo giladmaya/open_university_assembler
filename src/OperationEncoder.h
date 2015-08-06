@@ -12,13 +12,14 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-operation* get_operation_data(line_info* p_info, bool is_first, ADDRESS_METHOD previous_address_method);
+operation* get_operation_data(line_info* p_info, bool is_first, ADDRESS_METHOD* previous_address_method, char** prev_source_operand);
 
 char* get_operation_name(line_info* p_info);
 int get_operation_times_counter(line_info* p_info);
 bool are_operands_valid(char* operation_name, ADDRESS_METHOD first_operand, ADDRESS_METHOD second_operand);
 ADDRESS_METHOD get_address_method(line_info* p_info, char* operand);
-bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, bool is_first, ADDRESS_METHOD previous_address_method);
+bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, char** operand, bool is_first,
+		ADDRESS_METHOD previous_address_method, char* prev_operand);
 
 bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_file);
 bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, FILE* p_file, line_info* p_info);
