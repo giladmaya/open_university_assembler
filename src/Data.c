@@ -9,9 +9,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+/* Global variables */
 data_node_ptr p_data_head = NULL;
 data_node_ptr p_data_tail = NULL;
 
+/*
+ * Description: Adds new data found in code to the list
+ */
 void add_data_node_to_list(data_node_ptr p_new_data) {
 	if (p_data_head == NULL) {
 		p_data_head = p_new_data;
