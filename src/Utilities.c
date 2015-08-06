@@ -22,6 +22,7 @@ void print_compiler_error(char* message, line_info* info) {
 
 void print_runtime_error(char* message) {
 	fprintf(stderr, "Error: %s \n", message);
+	exit(0);
 }
 
 void skip_all_spaces(line_info* info) {
@@ -62,6 +63,8 @@ void get_next_word(line_info* info, char** word, bool skip_spaces)
 
 	if (*word == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		strncpy(*word, info->line_str + word_start_index, word_length);
 		(*word)[word_length] = '\0';
@@ -75,6 +78,8 @@ line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 
 	if (info == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		info->current_index = 0;
 		info->file_name = file_name;
@@ -98,6 +103,8 @@ void get_operation(char* word, char** operation, int* counter) {
 
 	if (*operation == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		strncpy(*operation, word, i);
 		(*operation)[i] = '\0';
@@ -152,6 +159,8 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 
 	if (p_new == NULL) {
 		/* Todo: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		p_new->data.name = name;
 		p_new->data.code = code;
@@ -187,6 +196,7 @@ char* get_label(line_info* info) {
 
 }
 
+/* IDAN : Dont we need skip all spaces at the start? */
 bool is_empty_or_comment(char* line) {
 	int length = strlen(line);
 
@@ -229,6 +239,8 @@ char* get_next_operand(line_info* info) {
 
 	if (operand == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		strncpy(operand, info->line_str + operand_start_index, operand_length);
 		operand[operand_length] = '\0';
@@ -269,33 +281,36 @@ bool is_register(char* operand, int length) {
 	return (digit < REGISTERS_COUNT) && (digit >= 0);
 }
 
-char* convert_base10_to_target_base(unsigned int base10_number, int target_base) {
+char* convert_base10_to_target_base(unsigned int base10_number, int target_base, int minimal_returned_length) {
 	char* result = NULL;
+	char* current_token = NULL;
 	int result_length;
-	int whole = base10_number;
 	int remainder = 0;
 
 	result = (char*)malloc(sizeof(char) * 1);
 
 	if (result == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		result[0] = END_OF_STRING;
 		result_length = 1;
 	}
 
-	while (whole != 0) {
-		char* current_token = NULL;
+	while (base10_number != 0) {
 		int temp;
 
-		temp = whole / target_base;
-		remainder = whole - temp * target_base;
-		whole = temp;
+		temp = base10_number / target_base;
+		remainder = base10_number - temp * target_base;
+		base10_number = temp;
 
 		current_token = (char*)malloc(sizeof(char) * (result_length + 1));
 
 		if (current_token == NULL) {
 			/*TODO: bad alloc */
+			/*??*/
+			print_runtime_error("Could not allocate memory. Exit program");
 		} else {
 			current_token[0] = '0' + remainder;
 			current_token[1] = END_OF_STRING;
@@ -305,6 +320,21 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base)
 			free(result);
 			result = current_token;
 		}
+	}
+
+	/* Making sure that the returned result is with the right length and if not, add 0 to the right */
+	result_length = strlen(result);
+
+	while (result_length < minimal_returned_length) {
+		current_token = (char*)malloc(sizeof(char) * (result_length + 1));
+		current_token[0] = '0';
+		current_token[1] = END_OF_STRING;
+
+		strcat(current_token, result);
+
+		free(result);
+		result = current_token;
+		result_length++;
 	}
 
 	return result;
@@ -319,6 +349,7 @@ void* allocate_memory(int bytes) {
 
 	if (result == NULL) {
 		print_runtime_error("Could not allocate memory. Exit program");
+		/*IDAN : why do we need exit here after runtime error? */
 		exit(0);
 	}
 
@@ -338,7 +369,7 @@ bool is_end_of_data_in_line(line_info* info) {
 
 	return is_end;
 }
-
+/* IDAN : why *do we need it?, its another name for get_lable */
 void skip_label(line_info* info) {
 	get_label(info);
 }

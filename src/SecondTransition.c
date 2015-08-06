@@ -145,9 +145,10 @@ void process_and_write_entry(line_info* info) {
 		char* base4_value;
 
 		fputs(entry_name, p_ent_file);
-		fputc(' ', p_ent_file);
+		fputc('COLUMN_SEPARATOR', p_ent_file);
 
-		base4_value = convert_base10_to_target_base(p_symbol->data.address, TARGET_BASE);
+		/* Print address base value */
+		base4_value = convert_base10_to_target_base(p_symbol->data.address, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
 		fputs(base4_value, p_ent_file);
 		fputc(END_OF_LINE, p_ent_file);
 	}
