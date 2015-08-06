@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 		strcat (curr_file, FILE_EXT);
 
 		/* Open the file or die*/
-		p_file = fopen(curr_file, "r");
+		p_file = fopen(curr_file, READ_ONLY_MODE);
 		if (p_file == NULL) {
 			print_runtime_error("Could not open source file");
 		}

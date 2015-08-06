@@ -64,8 +64,6 @@ bool execute_first_transition(FILE* pFile, char* file_name) {
 
 				free(info);
 			}
-		} else {
-			print_runtime_error("Failed due to unexpected error during input file processing");
 		}
 	}
 

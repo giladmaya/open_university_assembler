@@ -62,8 +62,6 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 
 				free(info);
 			}
-		} else {
-			print_runtime_error("Failed due to unexpected error in reading input file");
 		}
 	}
 
