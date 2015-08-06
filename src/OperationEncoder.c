@@ -390,20 +390,22 @@ bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p
 
 	print_encoding_to_file(ic, word.value, p_file);
 
+	/*IDAN : No value given to is_valid so WTF?! */
 	return is_valid;
 }
 
 void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file) {
 	char* base4_value;
 
-	base4_value = convert_base10_to_target_base(ic + ADDRESS_START, TARGET_BASE);
+	/* Print Address base value */
+	base4_value = convert_base10_to_target_base(ic + ADDRESS_START, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
 	fputs(base4_value, p_file);
-	fputc(' ', p_file);
+	fputc(COLUMN_SEPARATOR, p_file);
 
 	free(base4_value);
 
-	base4_value = convert_base10_to_target_base(value, TARGET_BASE);
-
+	/* Print operation base value */
+	base4_value = convert_base10_to_target_base(value, TARGET_BASE, TARGET_OPERATION_WORD_LENGTH);
 	fputs(base4_value, p_file);
 	fputc(END_OF_LINE, p_file);
 }
