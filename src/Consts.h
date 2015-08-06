@@ -16,10 +16,14 @@
 /* Length of line in code */
 #define MAX_LINE_LENGTH 200
 
+/* Base used in output files */
 #define TARGET_BASE 4
+
+/* Length of words in output files */
 #define TARGET_MEMORY_ADDRESS_WORD_LENGTH 4
 #define TARGET_OPERATION_WORD_LENGTH 6
 
+/* Address start in code file */
 #define ADDRESS_START 100
 #define NO_ADDRESS 0
 
