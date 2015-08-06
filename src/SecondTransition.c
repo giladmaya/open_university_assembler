@@ -212,3 +212,7 @@ void process_and_write_extern(line_info* info) {
 		}
 	}
 }
+
+void encode_data(unsigned int* ic) {
+
+}

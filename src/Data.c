@@ -6,6 +6,7 @@
  */
 
 #include "Types.h"
+#include "Utilities.h"
 #include <stdio.h>
 #include <stdlib.h>
 
