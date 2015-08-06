@@ -15,6 +15,10 @@
 symbol_node_ptr p_symbol_head = NULL;
 symbol_node_ptr p_symbol_tail = NULL;
 
+/*
+ * Description: Adds a new symbol to the list
+ * Input:		The new symbol
+ */
 void add_symbol_to_list(symbol_node_ptr p_new_symbol) {
 	if (p_symbol_head == NULL) {
 		p_symbol_head = p_new_symbol;

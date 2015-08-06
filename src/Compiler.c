@@ -30,6 +30,7 @@
  * 2. Fix encoding of external - Idan
  * 3. Fix weird empty lines
  * 4. Fix encoding of registry
+ * 5. Release memory when ending in runtime error
  */
 
 int main(int argc, char* argv[]) {
