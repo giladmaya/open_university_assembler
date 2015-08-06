@@ -25,6 +25,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+/*
+ * Knownn bugs:
+ * 2. Fix encoding of external - Idan
+ * 3. Fix weird empty lines
+ * 4. Fix encoding of registry
+ */
+
 int main(int argc, char* argv[]) {
 	int i;
 	char* curr_file;

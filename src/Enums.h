@@ -34,4 +34,10 @@ typedef enum {
 	RELOCATABLE = 2
 } ERA;
 
+typedef enum {
+	NO_OPERANDS = 0,
+	ONE_OPERAND = 1,
+	TWO_OPERANDS = 2
+} OPERANDS_COUNT;
+
 #endif /* ENUMS_H_ */
