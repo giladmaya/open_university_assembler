@@ -12,7 +12,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-void execute_first_transition(FILE* pFile, char* file_name);
+bool execute_first_transition(FILE* pFile, char* file_name);
 
 void process_line(line_info* info, unsigned int* ic, unsigned int* dc);
 

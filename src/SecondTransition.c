@@ -21,6 +21,11 @@ FILE* p_ob_file = NULL;
 FILE* p_extern_file = NULL;
 FILE* p_ent_file = NULL;
 
+/*
+ * Description: Executes the second transition
+ * Input:		1. Input file
+ * 				2. Name of input file
+ */
 void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	unsigned int IC;
 	int line_number = 0;
@@ -28,38 +33,37 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	ADDRESS_METHOD previous_address_method = IMMEDIATE;
 	char line[MAX_LINE_LENGTH];
 
-	char* file_name = (char*)malloc(sizeof(char) * (strlen(file_name_without_extension) + 4));
+	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(CODE_FILE_EXT));
 
-	if ((line == NULL) || !file_name) {
-		/* TODO: bad alloc */
-	}
+	/* Creates code file output name */
+	strcpy(file_name, file_name_without_extension);
+	strcat(file_name, CODE_FILE_EXT);
 
-    sprintf(file_name, "%s.ob", file_name_without_extension);
-	p_ob_file = fopen(file_name, "w");
+	p_ob_file = fopen(file_name, WRITE_MODE);
 
 	free(file_name);
 
 	if (!p_ob_file) {
-		/*TODO: throw error and exit */
+		print_runtime_error("Cannot open ob file for this input file");
 	}
 
 	/* Step 1 */
 	IC = 0;
 
+	/* Reads all code lines */
 	while (!feof(pFile)) {
 		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
+			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
 				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
 
-				if (info != NULL) {
-					process_line_transition_two(info, &IC, &is_first_operation, &previous_address_method);
+				process_line_transition_two(info, &IC, &is_first_operation, &previous_address_method);
 
-					free(info);
-				}
+				free(info);
 			}
 		} else {
-			/*TODO: error */
+			print_runtime_error("Failed due to unexpected error in reading input file");
 		}
 	}
 
@@ -76,6 +80,13 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	}
 }
 
+/*
+ * Description: Processes a line in input file
+ * Input:		1. Line information
+ * 				2. Current DC value
+ * 				3. Is first operation
+ * 				4. Previous address method
+ */
 void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_first, ADDRESS_METHOD* p_prev_method) {
 	char* type = NULL;
 	int index;
@@ -114,51 +125,60 @@ void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_fir
 	}
 }
 
+/*
+ * Description: Processes an entry line and prints its content into output file
+ * Input:		1. Line information
+ */
 void process_and_write_entry(line_info* info) {
 	char* entry_name = NULL;
 	symbol_node_ptr p_symbol;
 
 	if (!p_ent_file) {
-		char* file_name = (char*)malloc(sizeof(char) * (strlen(info->file_name) + 4));
+		char* file_name = allocate_memory(strlen(info->file_name) + strlen(ENTRY_FILE_EXT));
 
-		if (!file_name) {
-			/*TODO: bad alloc */
-		}
+		/* Creates entry output file name */
+		strcpy(file_name, info->file_name);
+		strcat(file_name, ENTRY_FILE_EXT);
 
-		sprintf(file_name, "%s.ent", info->file_name);
-		p_ent_file = fopen(file_name, "w");
+		p_ent_file = fopen(file_name, WRITE_MODE);
 
 		free(file_name);
 
 		if (!p_ent_file) {
-			/*TODO: error */
+			print_runtime_error("Cannot open entry output file");
 		}
 	}
 
 	get_next_word(info, &entry_name, true);
 
+	/* Search for the entry inside the symbol table */
 	p_symbol = search_symbol(entry_name);
 
 	if (p_symbol == NULL) {
-		/*TODO: error */
+		print_compiler_error("Invalid entry definition", info);
 	} else {
 		char* base4_value;
 
+		/* Add current entry to output file */
 		fputs(entry_name, p_ent_file);
 		fputc(COLUMN_SEPARATOR, p_ent_file);
 
-		/* Print address base value */
+		/* Add current entry address to output file */
 		base4_value = convert_base10_to_target_base(p_symbol->data.address, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
 		fputs(base4_value, p_ent_file);
 		fputc(END_OF_LINE, p_ent_file);
 	}
 }
 
+/*
+ * Description: Process an operation line
+ * Input:		1. Line information
+ * 				2. Current IC address
+ * 				3. Is first operation
+ * 				4. Previous address method
+ */
 void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_first, ADDRESS_METHOD* p_prev_address_method) {
-	coded_operation_union coded_op;
-	coded_operation operation_bits;
-	int i;
-
+	/* Gets all data about the current operation */
 	operation* p_decoded_operation = get_operation_data(info, *p_is_first, *p_prev_address_method);
 
 	if (p_decoded_operation == NULL) {
@@ -172,24 +192,27 @@ void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_
 		*p_is_first = false;
 	}
 
+	/* Encode the operation */
 	encode_operation(p_decoded_operation, ic, p_ob_file);
 }
 
+/*
+ * Description: Process an extern line
+ * Input:		Line information
+ */
 void process_and_write_extern(line_info* info) {
 	if (!p_extern_file) {
-		char* file_name = (char*)malloc(sizeof(char) * (strlen(info->file_name) + 4));
+		char* file_name = allocate_string(strlen(info->file_name) + strlen(EXTERN_FILE_EXT));
 
-		if (!file_name) {
-			/*TODO: bad alloc */
-		}
+		strcpy(file_name, info->file_name);
+		strcat(file_name, EXTERN_FILE_EXT);
 
-		sprintf(file_name, "%s.ext", info->file_name);
-		p_extern_file = fopen(file_name, "w");
+		p_extern_file = fopen(file_name, WRITE_MODE);
 
 		free(file_name);
 
 		if (!p_extern_file) {
-			/*TODO: error */
+			print_runtime_error("Cannot open extern output file");
 		}
 	}
 }

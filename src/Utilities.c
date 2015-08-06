@@ -86,6 +86,7 @@ line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 		info->line_number = line_number;
 		info->line_str = line_str;
 		info->line_length = strlen(line_str);
+		info->is_error = false;
 	}
 
 	return info;

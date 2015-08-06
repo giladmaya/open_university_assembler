@@ -10,8 +10,7 @@
 
 #include <limits.h>
 
-/* Input code file extension */
-#define FILE_EXT ".as"
+
 
 /* Length of line in code */
 #define MAX_LINE_LENGTH 200
@@ -47,6 +46,7 @@
 #define COPY_PERVIOUS_STR "$$"
 #define REGISTER_FIRST_TOKEN 'R'
 #define REGISTERS_COUNT 8
+#define OPERAION_MIN_WORD_SIZE 1
 
 #define INVALID_OPEARTION_COUNTER -1
 
@@ -77,5 +77,21 @@
 #define JSR_OPERATION "jsr"
 #define RTS_OPERATION "rts"
 #define STOP_OPERATION "stop"
+
+/*
+ * File usage
+ */
+#define READ_ONLY_MODE "r"
+#define WRITE_MODE "w"
+
+/* Input code file extension */
+#define FILE_EXT ".as"
+
+/*
+ * Output file extensions
+ */
+#define EXTERN_FILE_EXT ".ext"
+#define CODE_FILE_EXT ".ob"
+#define ENTRY_FILE_EXT ".ent"
 
 #endif /* CONSTS_H_ */

@@ -70,6 +70,7 @@ typedef struct line_info {
 	int current_index;
 	int line_number;
 	char* file_name;
+	bool is_error;
 } line_info;
 
 typedef struct {

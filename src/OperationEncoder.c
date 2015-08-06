@@ -16,78 +16,85 @@
 #include <string.h>
 #include <stdio.h>
 
-operation* get_operation_data(line_info* p_info, bool is_first, ADDRESS_METHOD previous_address_method) {
+/*
+ * Description: Get all data of operation in line
+ * Input:		1. Line information
+ * 				2. Can use copy previous address method
+ * 				3. Previous address method
+ * Output:		Operation data
+ */
+operation* get_operation_data(line_info* p_info, bool is_first,
+		ADDRESS_METHOD previous_address_method) {
 	char* operation_name = get_operation_name(p_info);
 	operation_information* p_operation_information = get_operation_info(operation_name);
 
-	if (p_operation_information == NULL) {
-		print_compiler_error("Invalid operation name", p_info);
-	} else {
-		char* source_operand = NULL;
-		char* target_operand = NULL;
-		ADDRESS_METHOD source_adderss_method = IMMEDIATE;
-		ADDRESS_METHOD target_adderss_method = IMMEDIATE;
-		int times = get_operation_times_counter(p_info);
+	char* source_operand = NULL;
+	char* target_operand = NULL;
+	ADDRESS_METHOD source_adderss_method = IMMEDIATE;
+	ADDRESS_METHOD target_adderss_method = IMMEDIATE;
+	int times = get_operation_times_counter(p_info);
 
-		if (times != INVALID_OPEARTION_COUNTER) {
-			switch (p_operation_information->operands_number) {
-				case NO_OPERANDS: {
-					/* Does nothing */
-					break;
-				}
-				case ONE_OPERAND: {
+	if (times != INVALID_OPEARTION_COUNTER) {
+		switch (p_operation_information->operands_number) {
+			case NO_OPERANDS: {
+				/* Does nothing */
+				break;
+			}
+			case ONE_OPERAND: {
+				target_operand = get_next_operand(p_info);
+				target_adderss_method = get_address_method(p_info, target_operand);
+				break;
+			}
+			case TWO_OPERANDS: {
+				source_operand = get_next_operand(p_info);
+				source_adderss_method = get_address_method(p_info, source_operand);
+
+				skip_all_spaces(p_info);
+
+				if (p_info->line_str[p_info->current_index] != OPERAND_SEPERATOR) {
+					print_compiler_error("Missing comma between two operands", p_info);
+					return NULL;
+				} else {
+					p_info->current_index++;
 					target_operand = get_next_operand(p_info);
 					target_adderss_method = get_address_method(p_info, target_operand);
-					break;
 				}
-				case TWO_OPERANDS: {
-					source_operand = get_next_operand(p_info);
-					source_adderss_method = get_address_method(p_info, source_operand);
 
-					skip_all_spaces(p_info);
-
-					if (p_info->line_str[p_info->current_index] != OPERAND_SEPERATOR) {
-						print_compiler_error("Missing comma between two operands", p_info);
-						return NULL;
-					} else {
-						p_info->current_index++;
-						target_operand = get_next_operand(p_info);
-						target_adderss_method = get_address_method(p_info, target_operand);
-					}
-
-					break;
-				}
-			}
-
-			if (is_end_of_data_in_line(p_info) &&
-				are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
-				/* If the operand is copy_previous it replaces */
-				bool is_valid =
-						replace_operand_method_if_needed(&source_adderss_method, is_first, previous_address_method);
-
-				is_valid &= replace_operand_method_if_needed(&target_adderss_method, is_first, previous_address_method);
-
-				if (!is_valid)
-				{
-					print_compiler_error("Invalid usage of Copy-Previous address method", p_info);
-				} else if (are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
-					operation* p_result_operation = (operation*)allocate_memory(sizeof(operation));
-
-					p_result_operation->operation = p_operation_information;
-					p_result_operation->source_operand = source_operand;
-					p_result_operation->target_operand = target_operand;
-					p_result_operation->source_operand_address_method = source_adderss_method;
-					p_result_operation->target_operand_address_method = target_adderss_method;
-					p_result_operation->times = times;
-
-					return p_result_operation;
-				}
-			} else {
-				print_compiler_error("Invalid tokens after operands", p_info);
+				break;
 			}
 		}
-	}
 
+		/*
+		 * Reads rest of line and verifies no invalid tokens exist
+		 * Verifies the operands are valid for this operation
+		 */
+		if (is_end_of_data_in_line(p_info) &&
+			are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
+			/* If the operand is copy_previous it replaces */
+			bool is_valid =
+					replace_operand_method_if_needed(&source_adderss_method, is_first, previous_address_method);
+
+			is_valid &= replace_operand_method_if_needed(&target_adderss_method, is_first, previous_address_method);
+
+			if (!is_valid)
+			{
+				print_compiler_error("Invalid usage of Copy-Previous address method", p_info);
+			} else if (are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
+				operation* p_result_operation = (operation*)allocate_memory(sizeof(operation));
+
+				p_result_operation->operation = p_operation_information;
+				p_result_operation->source_operand = source_operand;
+				p_result_operation->target_operand = target_operand;
+				p_result_operation->source_operand_address_method = source_adderss_method;
+				p_result_operation->target_operand_address_method = target_adderss_method;
+				p_result_operation->times = times;
+
+				return p_result_operation;
+			}
+		} else {
+			print_compiler_error("Invalid tokens after operands", p_info);
+		}
+	}
 	return NULL;
 }
 
