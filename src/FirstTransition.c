@@ -1,8 +1,16 @@
 /*
- * FirstTransition.c
- *
- *  Created on: Jul 9, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	FirstTransition.c
+
+ Author's	: 	Maya Gilad, Idan Levi
+
+ Description: 	A
+ Input		:	A
+
+ Output		:	A
+
+ Assumptions:
+ ====================================================================================
  */
 
 #include "FirstTransition.h"
