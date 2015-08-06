@@ -24,7 +24,7 @@
  * Output:		Operation data
  */
 operation* get_operation_data(line_info* p_info, bool is_first,
-		ADDRESS_METHOD previous_address_method) {
+		ADDRESS_METHOD* previous_address_method, char** prev_operand) {
 	char* operation_name = get_operation_name(p_info);
 	operation_information* p_operation_information = get_operation_info(operation_name);
 
@@ -72,12 +72,13 @@ operation* get_operation_data(line_info* p_info, bool is_first,
 			are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
 			/* If the operand is copy_previous it replaces */
 			bool is_valid =
-					replace_operand_method_if_needed(&source_adderss_method, is_first, previous_address_method);
+					replace_operand_method_if_needed(&source_adderss_method, &source_operand, is_first,
+							*previous_address_method, *prev_operand);
 
-			is_valid &= replace_operand_method_if_needed(&target_adderss_method, is_first, previous_address_method);
+			is_valid &= replace_operand_method_if_needed(&target_adderss_method, &target_operand, is_first,
+					*previous_address_method, *prev_operand);
 
-			if (!is_valid)
-			{
+			if (!is_valid) {
 				print_compiler_error("Invalid usage of Copy-Previous address method", p_info);
 			} else if (are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
 				operation* p_result_operation = (operation*)allocate_memory(sizeof(operation));
@@ -88,6 +89,14 @@ operation* get_operation_data(line_info* p_info, bool is_first,
 				p_result_operation->source_operand_address_method = source_adderss_method;
 				p_result_operation->target_operand_address_method = target_adderss_method;
 				p_result_operation->times = times;
+
+				if (p_operation_information->operands_number == TWO_OPERANDS) {
+					replace_content(prev_operand, source_operand);
+					*previous_address_method = source_adderss_method;
+				} else if (p_operation_information->operands_number == ONE_OPERAND){
+					replace_content(prev_operand, target_operand);
+					*previous_address_method = target_adderss_method;
+				}
 
 				return p_result_operation;
 			}
@@ -252,12 +261,14 @@ bool are_operands_valid(char* operation_name, ADDRESS_METHOD source_method, ADDR
 	}
 }
 
-bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, bool is_first, ADDRESS_METHOD previous_address_method) {
+bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, char** operand, bool is_first,
+		ADDRESS_METHOD previous_address_method, char* prev_operand) {
 	if (is_first && (*address_method == COPY_PREVIOUS)) {
 		return false;
 	} else {
 		if (*address_method == COPY_PREVIOUS) {
 			*address_method = previous_address_method;
+			replace_content(operand, prev_operand);
 		}
 
 		return true;
@@ -265,7 +276,6 @@ bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, bool is_fi
 }
 
 bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_file) {
-	char* encoded_opeartion = NULL;
 	coded_operation_union coded_op;
 	coded_operation operation_bits;
 	int i;
@@ -301,7 +311,6 @@ bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_
 
 bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, FILE* p_file, line_info* p_info) {
 	bool is_valid;
-	memory_word word;
 
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
 			(p_decoded_operation->target_operand_address_method == DIRECT_REGISTER)) {
@@ -385,11 +394,10 @@ bool encode_registers(char* source_register, char* target_register, unsigned int
 }
 
 bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file) {
-	bool is_valid;
 	int number;
 	memory_word word;
 
-	number = atoi(operand);
+	number = atoi(operand + 1);
 
 	word.non_register_address.operand_address = number;
 	word.non_register_address.era = ABSOLUTE;
@@ -397,8 +405,7 @@ bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p
 
 	print_encoding_to_file(ic, word.value, p_file);
 
-	/*IDAN : No value given to is_valid so WTF?! */
-	return is_valid;
+	return true;
 }
 
 void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file) {

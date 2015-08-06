@@ -31,6 +31,7 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 	int line_number = 0;
 	bool is_first_operation = true;
 	ADDRESS_METHOD previous_address_method = IMMEDIATE;
+	char* prev_operand = NULL;
 	char line[MAX_LINE_LENGTH];
 
 	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(CODE_FILE_EXT));
@@ -58,7 +59,7 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
 			if (!is_empty_or_comment(line)) {
 				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
 
-				process_line_transition_two(info, &IC, &is_first_operation, &previous_address_method);
+				process_line_transition_two(info, &IC, &is_first_operation, &previous_address_method, &prev_operand);
 
 				free(info);
 			}
@@ -85,7 +86,8 @@ void execute_second_transition(FILE* pFile, char* file_name_without_extension) {
  * 				3. Is first operation
  * 				4. Previous address method
  */
-void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_first, ADDRESS_METHOD* p_prev_method) {
+void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_first,
+		ADDRESS_METHOD* p_prev_method, char** prev_operand) {
 	char* type = NULL;
 	int index;
 
@@ -115,7 +117,7 @@ void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_fir
 	}
 	else  {
 		info->current_index = index;
-		process_and_encode_operation(info, ic, is_first, p_prev_method);
+		process_and_encode_operation(info, ic, is_first, p_prev_method, prev_operand);
 	}
 
 	if (type != NULL) {
@@ -175,20 +177,16 @@ void process_and_write_entry(line_info* info) {
  * 				3. Is first operation
  * 				4. Previous address method
  */
-void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_first, ADDRESS_METHOD* p_prev_address_method) {
+void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_first,
+		ADDRESS_METHOD* p_prev_address_method, char** prev_operand) {
 	/* Gets all data about the current operation */
-	operation* p_decoded_operation = get_operation_data(info, *p_is_first, *p_prev_address_method);
+	operation* p_decoded_operation = get_operation_data(info, *p_is_first, p_prev_address_method, prev_operand);
 
 	if (p_decoded_operation == NULL) {
 		return;
 	}
 
-	if (p_decoded_operation->operation->operands_number == NO_OPERANDS) {
-		*p_is_first = true;
-	} else {
-		*p_prev_address_method = p_decoded_operation->source_operand_address_method;
-		*p_is_first = false;
-	}
+	*p_is_first = (*prev_operand) == NULL;
 
 	/* Encode the operation */
 	encode_operation(p_decoded_operation, ic, p_ob_file);

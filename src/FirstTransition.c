@@ -172,7 +172,7 @@ void process_extern(line_info* info) {
 	get_next_word(info, &extern_name, true);
 
 	if (extern_name != NULL) {
-		p_symbol = create_symbol(extern_name, 0, true, true);
+		p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
 
 		add_symbol_to_list(p_symbol);
 	}

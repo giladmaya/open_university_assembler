@@ -43,4 +43,6 @@ bool is_valid_lable (char* str);
 
 bool is_valid_is_operation_line (char* str);
 
+void replace_content(char** current_string, char* new_string);
+
 #endif /* UTILITIES_H_ */
