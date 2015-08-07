@@ -34,7 +34,7 @@
 #define PLUS_SIGN '+'
 #define NUMBER_TOKEN_SEPERATOR ','
 #define STRING_DATA_END 0
-#define COLUMN_SEPARATOR ' '
+#define COLUMN_SEPARATOR '\t'
 
 #define LABEL_END_TOKEN ':'
 #define LABEL_MAX_LENGTH 30
