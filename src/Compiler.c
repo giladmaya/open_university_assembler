@@ -29,6 +29,7 @@
  * Known bugs:
  * 5. Release memory when ending in runtime error
  * 6. Release memory of data and symbol
+ * 7. Write DC and IC size on start of ob file
  */
 
 int main(int argc, char* argv[]) {
