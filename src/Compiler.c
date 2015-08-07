@@ -45,6 +45,8 @@ int main(int argc, char* argv[]) {
 	
 	/* Run the Compiler for each file given as arg */
 	for (i=1; i < argc; i++) {
+		int ic;
+		int dc;
 
 		/* Create full file path */
 		curr_file = allocate_string(strlen(argv[i])+strlen(FILE_EXT));
@@ -57,9 +59,9 @@ int main(int argc, char* argv[]) {
 			print_runtime_error("Could not open source file");
 		}
 
-		first_transition_execute(p_file, curr_file);
+		first_transition_execute(p_file, curr_file, &ic, &dc);
 		rewind(p_file);
-		second_transition_execute(p_file, argv[i]);
+		second_transition_execute(p_file, argv[i], ic, dc);
 		fclose(p_file);
 
 		free(curr_file);
