@@ -31,7 +31,7 @@ typedef struct symbol_node* symbol_node_ptr;
  * A symbol node in the symbol table.
  */
 typedef struct symbol_node {
-	symbol data;
+	symbol current_symbol;
 	symbol_node_ptr next;
 } symbol_node;
 
@@ -46,32 +46,38 @@ typedef union {
 		unsigned int op_code : OPERATION_OP_CODE_BITS_LENGTH;
 		unsigned int group : OPERATION_GROUP_BITS_LENGTH;
 		unsigned int rest : REST_BITS_LENGTH;
-	} encoded_operation;
-	unsigned int operation_value;
-} coded_operation_union;
+	} bits;
+	unsigned int value;
+} encoded_operation;
 
-typedef struct {
-	unsigned int number : DATA_WORD_BITS_LENGTH;
-	unsigned int rest : REST_BITS_LENGTH;
-} data_value;
-
-typedef union {
-	data_value value;
-	unsigned int numberic_value;
-} data_value_bits;
-
+/*
+ * Data definition
+ * A data is defined of a value (char or number) and an address
+ */
 typedef struct data {
-	data_value_bits value_bits;
+	union {
+		struct {
+			unsigned int number : DATA_WORD_BITS_LENGTH;
+			unsigned int rest : REST_BITS_LENGTH;
+		} bits;
+		unsigned int value;
+	} encoded_data;
 	unsigned int address;
-} data;
+} data_definition;
 
 typedef struct data_node* data_node_ptr;
 
+/*
+ * Data Table Node
+ */
 typedef struct data_node {
-	data value;
+	data_definition current_data;
 	data_node_ptr next;
 } data_node;
 
+/*
+ * Holds the line processing state
+ */
 typedef struct line_info {
 	char* line_str;
 	int line_length;
@@ -81,53 +87,64 @@ typedef struct line_info {
 	bool is_error;
 } line_info;
 
+/*
+ * Holds the definition of the machine operation as instructed in the manual
+ */
 typedef struct {
 	char* name;
 	unsigned int code;
 	unsigned int operands_number;
-} operation_information;
+} machine_operation_definition;
 
 typedef struct operation_node* operation_information_node_ptr;
 
+/*
+ * Machine operation definitions node
+ */
 typedef struct operation_node {
-	operation_information data;
+	machine_operation_definition data;
 	operation_information_node_ptr next;
 } operation_information_node;
 
+/*
+ * Holds data of decoded operation
+ */
 typedef struct {
-	operation_information* operation;
+	machine_operation_definition* operation;
 	int times;
 	char* source_operand;
 	char* target_operand;
 	ADDRESS_METHOD source_operand_address_method;
 	ADDRESS_METHOD target_operand_address_method;
-} operation;
-
-typedef struct {
-	unsigned int era : 2;
-	unsigned int target_register_address : 5;
-	unsigned int source_register_address : 5;
-	unsigned int rest : 20;
-} register_memory_word;
-
-typedef struct {
-	unsigned int era: 2;
-	unsigned int operand_address : 10;
-	unsigned int rest : 20;
-} non_register_memory_word;
+} decoded_operation;
 
 typedef union {
-	register_memory_word register_address;
-	non_register_memory_word non_register_address;
+	struct {
+		unsigned int era : OPERATION_ERA_BITS_LENGTH;
+		unsigned int target_register_address : OPERAND_REGISTER_BITS_LENGTH;
+		unsigned int source_register_address : OPERAND_REGISTER_BITS_LENGTH;
+		unsigned int rest : REST_BITS_LENGTH;
+	} register_address;
+	struct {
+		unsigned int era: OPERATION_ERA_BITS_LENGTH;
+		unsigned int operand_address : OPERAND_NON_REGISTER_BITS_LENGTH;
+		unsigned int rest : REST_BITS_LENGTH;
+	} non_register_address;
 	unsigned int value;
 } memory_word;
 
+/*
+ * Holds output files
+ */
 typedef struct {
 	FILE* extern_file;
 	FILE* entry_file;
 	FILE* ob_file;
 } compiler_output_files;
 
+/*
+ * Holds transition data
+ */
 typedef struct {
 	char* prev_operation_operand;
 	ADDRESS_METHOD prev_operand_address_method;
