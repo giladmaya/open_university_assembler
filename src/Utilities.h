@@ -33,7 +33,7 @@ char* get_next_operand(line_info* info);
 ADDRESS_METHOD get_operand_method(char* operand);
 bool is_register(char* operand, int length);
 
-operation_information* get_operation_info(char* operation);
+machine_operation_definition* get_operation_info(char* operation);
 void init_operation_list();
 void add_operation_to_list(char* name, unsigned int code, int operands);
 

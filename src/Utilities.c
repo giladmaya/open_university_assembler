@@ -111,7 +111,7 @@ void get_operation(char* word, char** operation, int* counter) {
 	}
 }
 
-operation_information* get_operation_info(char* operation) {
+machine_operation_definition* get_operation_info(char* operation) {
 	operation_information_node_ptr p_current;
 
 	if (p_operation_head == NULL) {

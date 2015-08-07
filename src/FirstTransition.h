@@ -17,6 +17,6 @@ bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, un
 void first_transition_process_line(line_info* info, unsigned int* ic, unsigned int* dc);
 
 void process_operation(line_info* info,unsigned int* ic, char* label, char* type, bool is_symbol);
-int get_operation_size(line_info* info, operation_information* operation, int times);
+int get_operation_size(line_info* info, machine_operation_definition* operation, int times);
 
 #endif /* FIRSTTRANSITION_H_ */
