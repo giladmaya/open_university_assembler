@@ -24,7 +24,7 @@
  * Input:		1. Input file
  * 				2. Name of input file
  */
-void second_transition_execute(FILE* pFile, char* file_name_without_extension) {
+void second_transition_execute(FILE* pFile, char* file_name_without_extension, unsigned int previous_transition_ic, unsigned int previous_transition_dc) {
 	int line_number = 0;
 
 	transition_data* transition = create_transition_data();
@@ -33,6 +33,8 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension) {
 	output_files.ob_file = create_output_file(file_name_without_extension, CODE_FILE_EXT);
 	output_files.entry_file = NULL;
 	output_files.extern_file = NULL;
+
+	write_code_and_data_size_to_output_file(previous_transition_ic, previous_transition_dc, output_files.ob_file);
 
 	/* Step 1 */
 	transition->IC = 0;
@@ -131,4 +133,18 @@ void second_transition_process_operation(transition_data* transition, compiler_o
 
 	/* Encode the operation */
 	encode_operation(p_decoded_operation, &(transition->IC), p_output_files);
+}
+
+void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file) {
+	char* number = convert_base10_to_target_base(ic, TARGET_BASE, 0);
+	fputs(number, output_file);
+	fputc(' ', output_file);
+	free(number);
+
+	number = convert_base10_to_target_base(dc, TARGET_BASE, 0);
+	fputs(number, output_file);
+	free(number);
+
+	fputc(END_OF_LINE, output_file);
+
 }

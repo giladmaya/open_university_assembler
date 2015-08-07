@@ -453,3 +453,7 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 
 	return p_output_file;
 }
+
+char* int_to_string(int number) {
+	return convert_base10_to_target_base(number, 10, 0);
+}
