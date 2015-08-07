@@ -125,7 +125,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
  */
 void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files) {
 	/* Gets all data about the current operation */
-	operation* p_decoded_operation = get_operation_data(transition);
+	decoded_operation* p_decoded_operation = get_operation_data(transition);
 
 	if (p_decoded_operation == NULL) {
 		return;

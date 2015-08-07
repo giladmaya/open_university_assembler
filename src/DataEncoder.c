@@ -44,9 +44,9 @@ void add_data_node_to_list(data_node_ptr p_new_data) {
 void add_string_data_to_list(char data, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
-	p_data->value.value_bits.value.number = data;
-	p_data->value.value_bits.value.rest = NO_ADDRESS;
-	p_data->value.address = address;
+	p_data->current_data.encoded_data.bits.number = data;
+	p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
+	p_data->current_data.address = address;
 	p_data->next = NULL;
 
 	add_data_node_to_list(p_data);
@@ -59,9 +59,9 @@ void add_string_data_to_list(char data, unsigned int address) {
 void add_numeric_data_to_list(int number, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
-	p_data->value.value_bits.value.number = number;
-	p_data->value.value_bits.value.rest = NO_ADDRESS;
-	p_data->value.address = address;
+	p_data->current_data.encoded_data.bits.number = number;
+	p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
+	p_data->current_data.address = address;
 	p_data->next = NULL;
 
 	add_data_node_to_list(p_data);
@@ -75,9 +75,9 @@ void write_data_to_output_file(FILE* output_file) {
 	data_node_ptr p_current_data = p_data_head;
 
 	while (p_current_data != NULL) {
-		data data = p_current_data->value;
+		data_definition data = p_current_data->current_data;
 
-		print_encoding_to_file(data.address, data.value_bits.numberic_value, output_file);
+		print_encoding_to_file(data.address, data.encoded_data.value, output_file);
 
 		p_current_data = p_current_data->next;
 	}
@@ -91,7 +91,7 @@ void update_data_address(int ic_length) {
 	data_node_ptr p_current = p_data_head;
 
 	while (p_current != NULL) {
-		p_current->value.address += ic_length + ADDRESS_START;
+		p_current->current_data.address += ic_length + ADDRESS_START;
 
 		p_current = p_current->next;
 	}

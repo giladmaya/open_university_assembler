@@ -30,7 +30,7 @@ void second_transition_process_entry(line_info* info, compiler_output_files* out
 	} else {
 		create_entry_output_file_if_needed(output_files, info->file_name);
 
-		write_entry_to_output_file(entry_name, p_symbol->data.address, output_files->entry_file);
+		write_entry_to_output_file(entry_name, p_symbol->current_symbol.address, output_files->entry_file);
 	}
 }
 
