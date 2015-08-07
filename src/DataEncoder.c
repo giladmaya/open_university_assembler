@@ -16,9 +16,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Global variables */
+/* DataEncoder head and tail */
 data_node_ptr p_data_head = NULL;
 data_node_ptr p_data_tail = NULL;
+
 
 /*
  * Description: Adds new data found in code to the list
@@ -227,4 +228,24 @@ void process_numbers(line_info* info, unsigned int* dc) {
 		print_compiler_error(".data syntax is invalid", info);
 		info->is_error = true;
 	}
+}
+
+/*
+ * Description: Free list memory
+ * Input:		1. List Head
+ */
+void free_data_node_list() {
+	data_node_ptr p_cleaner_data = p_data_head;
+
+	while (!p_data_head) {
+
+		p_cleaner_data = p_data_head;
+
+		/* Move next */
+		p_data_head = p_data_head->next;
+
+		free (p_cleaner_data);
+	}
+
+	return;
 }

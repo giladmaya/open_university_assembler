@@ -453,3 +453,4 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 
 	return p_output_file;
 }
+

@@ -25,6 +25,22 @@
 #include <stdlib.h>
 #include <string.h>
 
+/* TODO : make the call in utils and with global */
+#include "DataEncoder.h"
+#include "SymbolTable.h"
+
+
+/*
+ * Description: Cleaning up memory between files, global call for all cleanups
+ */
+void memory_cleanup() {
+	free_data_node_list();
+	free_symbol_list();
+	return;
+}
+
+/* end of crap code*/
+
 /*
  * Known bugs:
  * 5. Release memory when ending in runtime error
@@ -60,8 +76,9 @@ int main(int argc, char* argv[]) {
 		first_transition_execute(p_file, curr_file);
 		rewind(p_file);
 		second_transition_execute(p_file, argv[i]);
-		fclose(p_file);
 
+		memory_cleanup();
+		fclose(p_file);
 		free(curr_file);
 	}
 	
