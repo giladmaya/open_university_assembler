@@ -12,8 +12,10 @@
 #include <stdbool.h>
 #include <string.h>
 
+/* SymbolTable head and tail */
 symbol_node_ptr p_symbol_head = NULL;
 symbol_node_ptr p_symbol_tail = NULL;
+
 
 /*
  * Description: Adds a new symbol to the list
@@ -68,4 +70,24 @@ void update_symbol_address(int ic_length) {
 
 		p_current = p_current->next;
 	}
+}
+
+/*
+ * Description: Free list memory
+ * Input:		1. List Head
+ */
+void free_symbol_list() {
+	symbol_node_ptr p_cleaner_data = p_symbol_head;
+
+	while (!p_symbol_head) {
+
+		p_cleaner_data = p_symbol_head;
+
+		/* Move next */
+		p_symbol_head = p_symbol_head->next;
+
+		free (p_cleaner_data);
+	}
+
+	return;
 }

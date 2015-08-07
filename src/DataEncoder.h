@@ -23,4 +23,6 @@ void update_data_address(int ic_length);
 
 void write_data_to_output_file(FILE* p_file);
 
+void free_data_node_list();
+
 #endif /* DATA_H_ */
