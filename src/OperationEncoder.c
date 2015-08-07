@@ -274,18 +274,16 @@ bool replace_operand_method_if_needed(ADDRESS_METHOD* current_address_method, ch
 
 bool encode_operation(operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
 	coded_operation_union coded_op;
-	coded_operation operation_bits;
 	int i;
 
-	operation_bits.source_operand_address_method = p_decoded_operation->source_operand_address_method;
-	operation_bits.target_operand_address_method = p_decoded_operation->target_operand_address_method;
-	operation_bits.group = p_decoded_operation->operation->operands_number;
-	operation_bits.op_code = p_decoded_operation->operation->code;
-	operation_bits.era = ABSOLUTE;
-	operation_bits.rest = 0;
-
-	coded_op.operation_value = 0;
-	coded_op.operation_bits = operation_bits;
+	coded_op.encoded_operation.source_operand_address_method =
+			p_decoded_operation->source_operand_address_method;
+	coded_op.encoded_operation.target_operand_address_method =
+			p_decoded_operation->target_operand_address_method;
+	coded_op.encoded_operation.group = p_decoded_operation->operation->operands_number;
+	coded_op.encoded_operation.op_code = p_decoded_operation->operation->code;
+	coded_op.encoded_operation.era = ABSOLUTE;
+	coded_op.encoded_operation.rest = 0;
 
 	for (i = 1; i <= p_decoded_operation->times; i++) {
 		print_encoding_to_file(*ic + ADDRESS_START, coded_op.operation_value, output_files->ob_file);
