@@ -237,7 +237,7 @@ void process_numbers(line_info* info, unsigned int* dc) {
 void free_data_node_list() {
 	data_node_ptr p_cleaner_data = p_data_head;
 
-	while (!p_data_head) {
+	while (p_data_head) {
 
 		p_cleaner_data = p_data_head;
 

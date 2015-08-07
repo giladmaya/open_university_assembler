@@ -41,6 +41,7 @@ symbol_node_ptr create_symbol(char* name, unsigned int address, bool is_extern, 
 		p_node->current_symbol.is_external = is_extern;
 		p_node->current_symbol.is_instruction = is_instruction;
 		p_node->current_symbol.address = address;
+		p_node->next = NULL;
 	}
 
 	return p_node;
@@ -79,7 +80,7 @@ void update_symbol_address(int ic_length) {
 void free_symbol_list() {
 	symbol_node_ptr p_cleaner_data = p_symbol_head;
 
-	while (!p_symbol_head) {
+	while (p_symbol_head) {
 
 		p_cleaner_data = p_symbol_head;
 

@@ -80,7 +80,6 @@ int main(int argc, char* argv[]) {
 		if (should_continue) {
 			rewind(p_file);
 			second_transition_execute(p_file, argv[i], ic, dc);
-			fclose(p_file);
 		} else {
 			/* Stop */
 		}
@@ -90,5 +89,7 @@ int main(int argc, char* argv[]) {
 		free(curr_file);
 	}
 	
+	printf("Done compiling");
+
 	exit(0);
 }
