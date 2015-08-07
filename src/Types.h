@@ -10,6 +10,7 @@
 
 #include "Enums.h"
 #include <stdbool.h>
+#include <stdio.h>
 
 /*
  * A symbol in the code.
@@ -50,10 +51,18 @@ typedef union {
 	unsigned int operation_value;
 } coded_operation_union;
 
+typedef struct {
+	unsigned int number : 12;
+	unsigned int rest : 22;
+} data_value;
+
+typedef union {
+	data_value value;
+	unsigned int numberic_value;
+} data_value_bits;
+
 typedef struct data {
-	char value;
-	int number;
-	bool is_number;
+	data_value_bits value_bits;
 	unsigned int address;
 } data;
 
@@ -113,5 +122,21 @@ typedef union {
 	non_register_memory_word non_register_address;
 	unsigned int value;
 } memory_word;
+
+typedef struct {
+	FILE* extern_file;
+	FILE* entry_file;
+	FILE* ob_file;
+} compiler_output_files;
+
+typedef struct {
+	char* prev_operation_operand;
+	ADDRESS_METHOD prev_operand_address_method;
+	unsigned int IC;
+	unsigned int DC;
+	bool is_compiler_error;
+	bool is_runtimer_error;
+	line_info* current_line_information;
+} transition_data;
 
 #endif /* TYPES_H_ */

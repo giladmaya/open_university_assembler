@@ -10,8 +10,6 @@
 
 #include <limits.h>
 
-
-
 /* Length of line in code */
 #define MAX_LINE_LENGTH 200
 

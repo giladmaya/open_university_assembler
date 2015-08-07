@@ -5,7 +5,9 @@
 # Add inputs and outputs from these tool invocations to the build variables 
 C_SRCS += \
 ../src/Compiler.c \
-../src/Data.c \
+../src/DataEncoder.c \
+../src/EntryEncoder.c \
+../src/ExternEncoder.c \
 ../src/FirstTransition.c \
 ../src/OperationEncoder.c \
 ../src/SecondTransition.c \
@@ -14,7 +16,9 @@ C_SRCS += \
 
 OBJS += \
 ./src/Compiler.o \
-./src/Data.o \
+./src/DataEncoder.o \
+./src/EntryEncoder.o \
+./src/ExternEncoder.o \
 ./src/FirstTransition.o \
 ./src/OperationEncoder.o \
 ./src/SecondTransition.o \
@@ -23,7 +27,9 @@ OBJS += \
 
 C_DEPS += \
 ./src/Compiler.d \
-./src/Data.d \
+./src/DataEncoder.d \
+./src/EntryEncoder.d \
+./src/ExternEncoder.d \
 ./src/FirstTransition.d \
 ./src/OperationEncoder.d \
 ./src/SecondTransition.d \

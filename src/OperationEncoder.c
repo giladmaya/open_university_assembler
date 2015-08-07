@@ -10,6 +10,7 @@
 #include "Types.h"
 #include "Utilities.h"
 #include "SymbolTable.h"
+#include "ExternEncoder.h"
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdlib.h>
@@ -23,16 +24,15 @@
  * 				3. Previous address method
  * Output:		Operation data
  */
-operation* get_operation_data(line_info* p_info, bool is_first,
-		ADDRESS_METHOD* previous_address_method, char** prev_operand) {
-	char* operation_name = get_operation_name(p_info);
+operation* get_operation_data(transition_data* transition) {
+	char* operation_name = get_operation_name(transition->current_line_information);
 	operation_information* p_operation_information = get_operation_info(operation_name);
 
 	char* source_operand = NULL;
 	char* target_operand = NULL;
 	ADDRESS_METHOD source_adderss_method = IMMEDIATE;
 	ADDRESS_METHOD target_adderss_method = IMMEDIATE;
-	int times = get_operation_times_counter(p_info);
+	int times = get_operation_times_counter(transition->current_line_information);
 
 	if (times != INVALID_OPEARTION_COUNTER) {
 		switch (p_operation_information->operands_number) {
@@ -41,23 +41,23 @@ operation* get_operation_data(line_info* p_info, bool is_first,
 				break;
 			}
 			case ONE_OPERAND: {
-				target_operand = get_next_operand(p_info);
-				target_adderss_method = get_address_method(p_info, target_operand);
+				target_operand = get_next_operand(transition->current_line_information);
+				target_adderss_method = get_address_method(transition->current_line_information, target_operand);
 				break;
 			}
 			case TWO_OPERANDS: {
-				source_operand = get_next_operand(p_info);
-				source_adderss_method = get_address_method(p_info, source_operand);
+				source_operand = get_next_operand(transition->current_line_information);
+				source_adderss_method = get_address_method(transition->current_line_information, source_operand);
 
-				skip_all_spaces(p_info);
+				skip_all_spaces(transition->current_line_information);
 
-				if (p_info->line_str[p_info->current_index] != OPERAND_SEPERATOR) {
-					print_compiler_error("Missing comma between two operands", p_info);
+				if (transition->current_line_information->line_str[transition->current_line_information->current_index] != OPERAND_SEPERATOR) {
+					print_compiler_error("Missing comma between two operands", transition->current_line_information);
 					return NULL;
 				} else {
-					p_info->current_index++;
-					target_operand = get_next_operand(p_info);
-					target_adderss_method = get_address_method(p_info, target_operand);
+					transition->current_line_information->current_index++;
+					target_operand = get_next_operand(transition->current_line_information);
+					target_adderss_method = get_address_method(transition->current_line_information, target_operand);
 				}
 
 				break;
@@ -68,18 +68,16 @@ operation* get_operation_data(line_info* p_info, bool is_first,
 		 * Reads rest of line and verifies no invalid tokens exist
 		 * Verifies the operands are valid for this operation
 		 */
-		if (is_end_of_data_in_line(p_info) &&
+		if (is_end_of_data_in_line(transition->current_line_information) &&
 			are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
 			/* If the operand is copy_previous it replaces */
 			bool is_valid =
-					replace_operand_method_if_needed(&source_adderss_method, &source_operand, is_first,
-							*previous_address_method, *prev_operand);
+					replace_operand_method_if_needed(&source_adderss_method, &source_operand, transition);
 
-			is_valid &= replace_operand_method_if_needed(&target_adderss_method, &target_operand, is_first,
-					*previous_address_method, *prev_operand);
+			is_valid &= replace_operand_method_if_needed(&target_adderss_method, &target_operand, transition);
 
 			if (!is_valid) {
-				print_compiler_error("Invalid usage of Copy-Previous address method", p_info);
+				print_compiler_error("Invalid usage of Copy-Previous address method", transition->current_line_information);
 			} else if (are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
 				operation* p_result_operation = (operation*)allocate_memory(sizeof(operation));
 
@@ -91,17 +89,17 @@ operation* get_operation_data(line_info* p_info, bool is_first,
 				p_result_operation->times = times;
 
 				if (p_operation_information->operands_number == TWO_OPERANDS) {
-					replace_content(prev_operand, source_operand);
-					*previous_address_method = source_adderss_method;
+					replace_content(&(transition->prev_operation_operand), source_operand);
+					transition->prev_operand_address_method = source_adderss_method;
 				} else if (p_operation_information->operands_number == ONE_OPERAND){
-					replace_content(prev_operand, target_operand);
-					*previous_address_method = target_adderss_method;
+					replace_content(&(transition->prev_operation_operand), target_operand);
+					transition->prev_operand_address_method = target_adderss_method;
 				}
 
 				return p_result_operation;
 			}
 		} else {
-			print_compiler_error("Invalid tokens after operands", p_info);
+			print_compiler_error("Invalid tokens after operands", transition->current_line_information);
 		}
 	}
 	return NULL;
@@ -261,21 +259,20 @@ bool are_operands_valid(char* operation_name, ADDRESS_METHOD source_method, ADDR
 	}
 }
 
-bool replace_operand_method_if_needed(ADDRESS_METHOD* address_method, char** operand, bool is_first,
-		ADDRESS_METHOD previous_address_method, char* prev_operand) {
-	if (is_first && (*address_method == COPY_PREVIOUS)) {
+bool replace_operand_method_if_needed(ADDRESS_METHOD* current_address_method, char** current_operand, transition_data* transition) {
+	if ((transition->prev_operation_operand == NULL) && (*current_address_method == COPY_PREVIOUS)) {
 		return false;
 	} else {
-		if (*address_method == COPY_PREVIOUS) {
-			*address_method = previous_address_method;
-			replace_content(operand, prev_operand);
+		if (*current_address_method == COPY_PREVIOUS) {
+			*current_address_method = transition->prev_operand_address_method;
+			replace_content(current_operand, transition->prev_operation_operand);
 		}
 
 		return true;
 	}
 }
 
-bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_file) {
+bool encode_operation(operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
 	coded_operation_union coded_op;
 	coded_operation operation_bits;
 	int i;
@@ -291,13 +288,13 @@ bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_
 	coded_op.operation_bits = operation_bits;
 
 	for (i = 1; i <= p_decoded_operation->times; i++) {
-		print_encoding_to_file(*ic, coded_op.operation_value, p_file);
+		print_encoding_to_file(*ic + ADDRESS_START, coded_op.operation_value, output_files->ob_file);
 
 		(*ic)++;
 
 		/*TODO: implement encode operands */
 		if (p_decoded_operation->operation->operands_number > 0) {
-			bool is_valid = encode_memory_word(p_decoded_operation, ic, p_file, NULL);
+			bool is_valid = encode_memory_word(p_decoded_operation, ic, output_files, NULL);
 
 			if (!is_valid) {
 				return is_valid;
@@ -309,34 +306,34 @@ bool encode_operation(operation* p_decoded_operation, unsigned int* ic, FILE* p_
 	return true;
 }
 
-bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, FILE* p_file, line_info* p_info) {
+bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info) {
 	bool is_valid;
 
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
 			(p_decoded_operation->target_operand_address_method == DIRECT_REGISTER)) {
 		is_valid = encode_registers(
-				p_decoded_operation->source_operand, p_decoded_operation->target_operand, *ic, p_info, p_file);
+				p_decoded_operation->source_operand, p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
 		(*ic)++;
 	} else {
 		if (p_decoded_operation->operation->operands_number == 2) {
 
 			if (p_decoded_operation->source_operand_address_method == DIRECT) {
-				is_valid = encode_direct(p_decoded_operation->source_operand, *ic, p_info, p_file);
+				is_valid = encode_direct(p_decoded_operation->source_operand, *ic, p_info, output_files);
 			} else if (p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) {
-				is_valid = encode_registers(p_decoded_operation->source_operand, NULL, *ic, p_info, p_file);
+				is_valid = encode_registers(p_decoded_operation->source_operand, NULL, *ic, p_info, output_files->ob_file);
 			} else if (p_decoded_operation->source_operand_address_method == IMMEDIATE) {
-				is_valid = encode_immediate(p_decoded_operation->source_operand, *ic, p_info, p_file);
+				is_valid = encode_immediate(p_decoded_operation->source_operand, *ic, p_info, output_files->ob_file);
 			}
 
 			(*ic)++;
 		}
 
 		if (p_decoded_operation->target_operand_address_method == DIRECT) {
-			is_valid = encode_direct(p_decoded_operation->target_operand, *ic, p_info, p_file);
+			is_valid = encode_direct(p_decoded_operation->target_operand, *ic, p_info, output_files);
 		} else if (p_decoded_operation->target_operand_address_method == DIRECT_REGISTER) {
-			is_valid = encode_registers(NULL, p_decoded_operation->target_operand, *ic, p_info, p_file);
+			is_valid = encode_registers(NULL, p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
 		} else if (p_decoded_operation->target_operand_address_method == IMMEDIATE) {
-			is_valid = encode_immediate(p_decoded_operation->target_operand, *ic, p_info, p_file);
+			is_valid = encode_immediate(p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
 		}
 
 		(*ic)++;
@@ -345,7 +342,7 @@ bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, FILE* 
 	return is_valid;
 }
 
-bool encode_direct(char* operand, unsigned int ic, line_info* p_info, FILE* p_file) {
+bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_output_files* output_files) {
 	symbol_node_ptr p_symbol = search_symbol(operand);
 
 	if (p_symbol == NULL) {
@@ -358,13 +355,16 @@ bool encode_direct(char* operand, unsigned int ic, line_info* p_info, FILE* p_fi
 
 		if (p_symbol->data.is_external) {
 			word.non_register_address.era = EXTERNAL;
+
+			write_extern_to_output_file(operand, ic + ADDRESS_START, output_files->extern_file);
 		} else {
+
 			word.non_register_address.era = RELOCATABLE;
 		}
 
 		word.non_register_address.rest = 0;
 
-		print_encoding_to_file(ic, word.value, p_file);
+		print_encoding_to_file(ic + ADDRESS_START, word.value, output_files->ob_file);
 
 		return true;
 	}
@@ -388,7 +388,7 @@ bool encode_registers(char* source_register, char* target_register, unsigned int
 	word.register_address.era = ABSOLUTE;
 	word.register_address.rest = 0;
 
-	print_encoding_to_file(ic, word.value, p_file);
+	print_encoding_to_file(ic + ADDRESS_START, word.value, p_file);
 
 	return true;
 }
@@ -403,16 +403,16 @@ bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p
 	word.non_register_address.era = ABSOLUTE;
 	word.non_register_address.rest = 0;
 
-	print_encoding_to_file(ic, word.value, p_file);
+	print_encoding_to_file(ic + ADDRESS_START, word.value, p_file);
 
 	return true;
 }
 
-void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file) {
+void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_file) {
 	char* base4_value;
 
 	/* Print Address base value */
-	base4_value = convert_base10_to_target_base(ic + ADDRESS_START, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
+	base4_value = convert_base10_to_target_base(address, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
 	fputs(base4_value, p_file);
 	fputc(COLUMN_SEPARATOR, p_file);
 

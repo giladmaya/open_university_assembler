@@ -27,10 +27,8 @@
 
 /*
  * Known bugs:
- * 2. Fix encoding of external - Idan
- * 3. Fix weird empty lines
- * 4. Fix encoding of registry
  * 5. Release memory when ending in runtime error
+ * 6. Release memory of data and symbol
  */
 
 int main(int argc, char* argv[]) {
@@ -58,9 +56,9 @@ int main(int argc, char* argv[]) {
 			print_runtime_error("Could not open source file");
 		}
 
-		execute_first_transition(p_file, curr_file);
+		first_transition_execute(p_file, curr_file);
 		rewind(p_file);
-		execute_second_transition(p_file, argv[i]);
+		second_transition_execute(p_file, argv[i]);
 		fclose(p_file);
 
 		free(curr_file);

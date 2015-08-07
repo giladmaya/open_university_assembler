@@ -12,17 +12,11 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-bool execute_first_transition(FILE* pFile, char* file_name);
+bool first_transition_execute(FILE* pFile, char* file_name);
 
-void process_line(line_info* info, unsigned int* ic, unsigned int* dc);
-
-void process_data(line_info* info, unsigned int* dc, char* word, char* type, bool is_symbol);
-void process_string(line_info* info, unsigned int* dc);
-void process_numbers(line_info* info, unsigned int* dc);
+void first_transition_process_line(line_info* info, unsigned int* ic, unsigned int* dc);
 
 void process_operation(line_info* info,unsigned int* ic, char* label, char* type, bool is_symbol);
 int get_operation_size(line_info* info, operation_information* operation, int times);
-
-void process_extern(line_info* info);
 
 #endif /* FIRSTTRANSITION_H_ */

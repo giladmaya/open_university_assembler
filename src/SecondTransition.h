@@ -11,16 +11,10 @@
 #include "Types.h"
 #include <stdio.h>
 
-void execute_second_transition(FILE* pFile, char* file_name_without_extension);
+void second_transition_execute(FILE* pFile, char* file_name_without_extension);
 
-void process_line_transition_two(line_info* info, unsigned int* ic, bool* is_first,
-		ADDRESS_METHOD* p_prev_method, char** prev_operand);
+void second_transition_process_line(transition_data* transition, compiler_output_files* output_files);
 
-void process_and_encode_operation(line_info* info, unsigned int* ic, bool* p_is_first,
-		ADDRESS_METHOD* p_prev_address_method, char** prev_operand);
-void process_and_write_entry(line_info* info);
-void process_and_write_extern(line_info* info);
-
-void encode_data(unsigned int* ic);
+void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files);
 
 #endif /* SECONDTRANSITION_H_ */
