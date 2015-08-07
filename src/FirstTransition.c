@@ -145,7 +145,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 		print_compiler_error("Operation line is too long", info);
 		info->is_error = true;
 	} else {
-		operation_information* operation_info;
+		machine_operation_definition* operation_info;
 
 		/* Step 12 */
 		get_operation(type, &operation_name, &operation_counter);
@@ -171,7 +171,7 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
  * 				3. How many times to perform the operation
  * Output:		Memory words size for the encoded operation
  */
-int get_operation_size(line_info* info, operation_information* operation, int times) {
+int get_operation_size(line_info* info, machine_operation_definition* operation, int times) {
 	int size = OPERAION_MIN_WORD_SIZE;
 
 	/* There are operands */

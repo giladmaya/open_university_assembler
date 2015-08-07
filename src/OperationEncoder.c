@@ -24,9 +24,9 @@
  * 				3. Previous address method
  * Output:		Operation data
  */
-operation* get_operation_data(transition_data* transition) {
+decoded_operation* get_operation_data(transition_data* transition) {
 	char* operation_name = get_operation_name(transition->current_line_information);
-	operation_information* p_operation_information = get_operation_info(operation_name);
+	machine_operation_definition* p_operation_information = get_operation_info(operation_name);
 
 	char* source_operand = NULL;
 	char* target_operand = NULL;
@@ -79,7 +79,7 @@ operation* get_operation_data(transition_data* transition) {
 			if (!is_valid) {
 				print_compiler_error("Invalid usage of Copy-Previous address method", transition->current_line_information);
 			} else if (are_operands_valid(operation_name, source_adderss_method, target_adderss_method)) {
-				operation* p_result_operation = (operation*)allocate_memory(sizeof(operation));
+				decoded_operation* p_result_operation = (decoded_operation*)allocate_memory(sizeof(decoded_operation));
 
 				p_result_operation->operation = p_operation_information;
 				p_result_operation->source_operand = source_operand;
@@ -272,21 +272,21 @@ bool replace_operand_method_if_needed(ADDRESS_METHOD* current_address_method, ch
 	}
 }
 
-bool encode_operation(operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
-	coded_operation_union coded_op;
+bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
+	encoded_operation coded_op;
 	int i;
 
-	coded_op.encoded_operation.source_operand_address_method =
+	coded_op.bits.source_operand_address_method =
 			p_decoded_operation->source_operand_address_method;
-	coded_op.encoded_operation.target_operand_address_method =
+	coded_op.bits.target_operand_address_method =
 			p_decoded_operation->target_operand_address_method;
-	coded_op.encoded_operation.group = p_decoded_operation->operation->operands_number;
-	coded_op.encoded_operation.op_code = p_decoded_operation->operation->code;
-	coded_op.encoded_operation.era = ABSOLUTE;
-	coded_op.encoded_operation.rest = 0;
+	coded_op.bits.group = p_decoded_operation->operation->operands_number;
+	coded_op.bits.op_code = p_decoded_operation->operation->code;
+	coded_op.bits.era = ABSOLUTE;
+	coded_op.bits.rest = 0;
 
 	for (i = 1; i <= p_decoded_operation->times; i++) {
-		print_encoding_to_file(*ic + ADDRESS_START, coded_op.operation_value, output_files->ob_file);
+		print_encoding_to_file(*ic + ADDRESS_START, coded_op.value, output_files->ob_file);
 
 		(*ic)++;
 
@@ -304,7 +304,7 @@ bool encode_operation(operation* p_decoded_operation, unsigned int* ic, compiler
 	return true;
 }
 
-bool encode_memory_word(operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info) {
+bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info) {
 	bool is_valid;
 
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
@@ -349,9 +349,9 @@ bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_o
 	} else {
 		memory_word word;
 
-		word.non_register_address.operand_address = p_symbol->data.address;
+		word.non_register_address.operand_address = p_symbol->current_symbol.address;
 
-		if (p_symbol->data.is_external) {
+		if (p_symbol->current_symbol.is_external) {
 			word.non_register_address.era = EXTERNAL;
 
 			write_extern_to_output_file(operand, ic + ADDRESS_START, output_files->extern_file);
