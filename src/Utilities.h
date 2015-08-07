@@ -20,7 +20,7 @@ void* allocate_memory(int bytes);
 
 void skip_all_spaces(line_info* info);
 
-void get_next_word(line_info* info, char** word, bool skip_spaces);
+char* get_next_word(line_info* info);
 char* get_label(line_info* info);
 void skip_label(line_info* info);
 
@@ -44,5 +44,9 @@ bool is_valid_lable (char* str);
 bool is_valid_is_operation_line (char* str);
 
 void replace_content(char** current_string, char* new_string);
+
+transition_data* create_transition_data();
+
+FILE* create_output_file(char* file_name_without_extension, char* extension);
 
 #endif /* UTILITIES_H_ */

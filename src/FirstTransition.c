@@ -18,8 +18,9 @@
 #include "Types.h"
 #include "Utilities.h"
 #include "SymbolTable.h"
-#include "Data.h"
+#include "DataEncoder.h"
 #include "Enums.h"
+#include "ExternEncoder.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -38,7 +39,7 @@ bool can_use_copy_previous = false;
  * 				2. File name
  * Output:		Was transition successfull
  */
-bool execute_first_transition(FILE* pFile, char* file_name) {
+bool first_transition_execute(FILE* pFile, char* file_name) {
 	unsigned int IC;
 	unsigned int DC;
 	int line_number = 0;
@@ -49,7 +50,7 @@ bool execute_first_transition(FILE* pFile, char* file_name) {
 	IC = 0;
 	DC = 0;
 
-	/* Runs untill end of file */
+	/* Runs until end of file */
 	while (!feof(pFile)) {
 		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
@@ -58,7 +59,7 @@ bool execute_first_transition(FILE* pFile, char* file_name) {
 				line_info* info = create_line_info(file_name, ++line_number, line);
 
 				/* Process the line */
-				process_line(info, &IC, &DC);
+				first_transition_process_line(info, &IC, &DC);
 
 				success &= !(info->is_error);
 
@@ -68,7 +69,8 @@ bool execute_first_transition(FILE* pFile, char* file_name) {
 	}
 
 	/* Changes the data address according to the code length */
-	calculate_final_data_address(IC);
+	update_data_address(IC);
+	update_symbol_address(IC);
 
 	return success;
 }
@@ -79,29 +81,27 @@ bool execute_first_transition(FILE* pFile, char* file_name) {
  * 				2. Current IC address
  * 				3. Current DC value
  */
-void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
+void first_transition_process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 	char* label = NULL;
 	char* type = NULL;
 	bool is_symbol = false;
-
-	label = get_label(info);
 
 	/*
 	 * Step 3
 	 * The first field is a label
 	 */
-	if (label != NULL) {
+	if ((label = get_label(info)) != NULL) {
 		/* Step 4 */
 		is_symbol = true;
 	}
 
-	get_next_word(info, &type, true);
+	type = get_next_word(info);
 
 	/*
 	 * Step 5
 	 */
 	if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
-		process_data(info, dc, label, type, is_symbol);
+		first_transition_process_data(info, dc, label, type, is_symbol);
 	}
 	/*
 	 * Step 8
@@ -109,7 +109,7 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 	else if ((strcmp(type, EXTERN_OPERATION) == 0) || (strcmp(type, ENTRY_OPERATION) == 0)) {
 		/* Step 9 */
 		if (strcmp(type, EXTERN_OPERATION) == 0) {
-			process_extern(info);
+			first_transition_process_extern(info);
 		}
 	}
 	/*
@@ -121,60 +121,6 @@ void process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
 
 	if (type != NULL) {
 		free(type);
-	}
-}
-
-/*
- * Description: Processes a data initialization line
- * Input:		1. Line information
- * 				2. Current DC value
- * 				3. Label value
- * 				4. Type of data (.string, .data)
- * 				5. Does a symbol exists
- */
-void process_data(line_info* info, unsigned int* dc, char* label, char* type, bool is_symbol) {
-	/* Step 6 */
-	if (is_symbol) {
-		symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
-
-		add_symbol_to_list(p_symbol);
-	}
-
-	skip_all_spaces(info);
-
-	/*
-	 * Step 7.
-	 * Extract data according to type
-	 */
-	if (info->current_index > info->line_length) {
-		print_compiler_error("Any data instruction must be followed by data initialization", info);
-		info->is_error = true;
-	}
-	/* This is a string initialization */
-	else if (strcmp(type, STRING_OPERATION) == 0) {
-		process_string(info, dc);
-	}
-	/* This is a numeric data */
-	else {
-		process_numbers(info, dc);
-	}
-}
-
-/*
- * Description: Process extern definition
- * Input:		1. Line information
- */
-void process_extern(line_info* info) {
-	symbol_node_ptr p_symbol = NULL;
-
-	char* extern_name = NULL;
-
-	get_next_word(info, &extern_name, true);
-
-	if (extern_name != NULL) {
-		p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
-
-		add_symbol_to_list(p_symbol);
 	}
 }
 
@@ -300,100 +246,4 @@ int get_operation_size(line_info* info, operation_information* operation, int ti
 	}
 
 	return size * times;
-}
-
-/*
- * Description: Processes a string
- * Input:		1. Line information
- * 				2. Current DC value
- */
-void process_string(line_info* info, unsigned int* dc) {
-	if (info->line_str[info->current_index] != QUOTATION) {
-		print_compiler_error("A string must start with a '\"' token", info);
-		info->is_error = true;
-	} else {
-		int data_index = info->current_index + 1;
-
-		while (data_index < info->line_length) {
-			char token = info->line_str[data_index];
-			if (token == END_OF_LINE) {
-				print_compiler_error("A string must end with a '\"' token", info);
-				info->is_error = true;
-				break;
-			} else if (token == QUOTATION) {
-				break;
-			} else if (token != QUOTATION) {
-				(*dc)++;
-				add_string_data_to_list(token, *dc);
-			}
-
-			data_index++;
-		}
-
-		(*dc)++;
-		add_string_data_to_list(STRING_DATA_END, *dc);
-	}
-}
-
-/*
- * Description: Processes numbers definition
- * Input:		1. Line information
- * 				2. Current DC value
- */
-void process_numbers(line_info* info, unsigned int* dc) {
-	bool is_valid = true;
-
-	skip_all_spaces(info);
-
-	/* Processes all numbers in line */
-	while ((info->current_index < info->line_length) && is_valid) {
-		char* partial_line = NULL;
-		char* number_str = NULL;
-		int number_str_length;
-		int number;
-		int number_end_index = info->current_index;
-
-		is_valid = false;
-
-		/* The number starts with a + or - sign */
-		if ((info->line_str[info->current_index] == MINUS_SIGN) ||
-				(info->line_str[info->current_index] == PLUS_SIGN)){
-			number_end_index++;
-		}
-
-		/* Get digits */
-		while ((number_end_index < info->line_length) && isdigit(info->line_str[number_end_index])) {
-			number_end_index++;
-		}
-
-		number_str_length = number_end_index - info->current_index;
-
-		number_str = allocate_string(number_str_length);
-
-		strncpy(number_str, info->line_str + info->current_index, number_str_length);
-		number_str[number_str_length] = END_OF_STRING;
-
-		number = atoi(number_str);
-
-		add_numeric_data_to_list(number, (*dc)++);
-
-		info->current_index = number_end_index;
-
-		free(number_str);
-
-		partial_line = strchr(info->line_str + info->current_index, NUMBER_TOKEN_SEPERATOR);
-
-		if (partial_line != NULL) {
-			info->current_index = partial_line - info->line_str + 1;
-
-			is_valid = true;
-		} else {
-			skip_all_spaces(info);
-		}
-	}
-
-	if (info->current_index < info->line_length) {
-		print_compiler_error(".data syntax is invalid", info);
-		info->is_error = true;
-	}
 }

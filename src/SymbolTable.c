@@ -54,12 +54,16 @@ symbol_node_ptr search_symbol(char* symbol_name) {
 	return p_current;
 }
 
-void calculate_final_data_address(int ic_length) {
+void update_symbol_address(int ic_length) {
 	symbol_node_ptr p_current = p_symbol_head;
 
 	while (p_current != NULL) {
-		if ((p_current->data.is_instruction) && (!p_current->data.is_external)) {
-			p_current->data.address += ic_length + ADDRESS_START;
+		if (!p_current->data.is_external) {
+			if (p_current->data.is_instruction) {
+				p_current->data.address += ic_length + ADDRESS_START;
+			} else {
+				p_current->data.address += ADDRESS_START;
+			}
 		}
 
 		p_current = p_current->next;

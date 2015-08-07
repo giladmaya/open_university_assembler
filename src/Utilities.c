@@ -35,17 +35,12 @@ void skip_all_spaces(line_info* info) {
 	info->current_index = index;
 }
 
-void get_next_word(line_info* info, char** word, bool skip_spaces)
+char* get_next_word(line_info* info)
 {
+	char* word;
 	int i, word_end_index, word_start_index, word_length;
 
-	if (*word != NULL) {
-		free(*word);
-	}
-
-	if (skip_spaces) {
-		skip_all_spaces(info);
-	}
+	skip_all_spaces(info);
 
 	word_end_index  = word_start_index = i = info->current_index;
 
@@ -59,18 +54,20 @@ void get_next_word(line_info* info, char** word, bool skip_spaces)
 
 	word_length = word_end_index - word_start_index + 1;
 
-	*word = (char*)malloc(sizeof(char) * (word_length + 1));
+	word = (char*)malloc(sizeof(char) * (word_length + 1));
 
-	if (*word == NULL) {
+	if (word == NULL) {
 		/* TODO: bad alloc */
 		/*??*/
 		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
-		strncpy(*word, info->line_str + word_start_index, word_length);
-		(*word)[word_length] = '\0';
+		strncpy(word, info->line_str + word_start_index, word_length);
+		(word)[word_length] = END_OF_STRING;
 
 		info->current_index = word_end_index + 1;
 	}
+
+	return word;
 }
 
 line_info* create_line_info(char* file_name, int line_number, char* line_str) {
@@ -178,9 +175,7 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 }
 
 char* get_label(line_info* info) {
-	char* label = NULL;
-
-	get_next_word(info,&label,true);
+	char* label = get_next_word(info);
 
 	/* Return a label only if its valid */
 	if (is_valid_lable(label)) {
@@ -291,8 +286,6 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 	result = (char*)malloc(sizeof(char) * 1);
 
 	if (result == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
 		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		result[0] = END_OF_STRING;
@@ -426,4 +419,37 @@ void replace_content(char** current_string, char* new_string) {
 
 	*current_string = temp;
 	strcpy(*current_string, new_string);
+}
+
+transition_data* create_transition_data() {
+	transition_data* transition = (transition_data*)allocate_memory(sizeof(transition_data));
+
+	transition->IC = 0;
+	transition->DC = 0;
+	transition->prev_operation_operand = NULL;
+	transition->is_compiler_error = false;
+	transition->is_runtimer_error = false;
+	transition->current_line_information = NULL;
+
+	return transition;
+}
+
+FILE* create_output_file(char* file_name_without_extension, char* extension) {
+	FILE* p_output_file = NULL;
+
+	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(extension));
+
+	/* Creates code file output name */
+	strcpy(file_name, file_name_without_extension);
+	strcat(file_name, extension);
+
+	p_output_file = fopen(file_name, WRITE_MODE);
+
+	free(file_name);
+
+	if (!p_output_file) {
+		print_runtime_error("Cannot create output file");
+	}
+
+	return p_output_file;
 }
