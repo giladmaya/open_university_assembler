@@ -7,6 +7,7 @@
 
 #include "Types.h"
 #include "Consts.h"
+#include "Utilities.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
@@ -36,6 +37,8 @@ symbol_node_ptr create_symbol(char* name, unsigned int address, bool is_extern, 
 
 	if (p_node == NULL) {
 		/* TODO: bad alloc */
+		/*??*/
+		print_runtime_error("Could not allocate memory. Exit program");
 	} else {
 		p_node->current_symbol.name = name;
 		p_node->current_symbol.is_external = is_extern;

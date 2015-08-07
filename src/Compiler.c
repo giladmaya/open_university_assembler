@@ -25,7 +25,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-/* TODO : make the call in utils and with global */
+/* TODO : make a decision were to put code : */
 #include "DataEncoder.h"
 #include "SymbolTable.h"
 
@@ -38,13 +38,13 @@ void memory_cleanup() {
 	return;
 }
 
-/* end of crap code*/
+/* end of crap code to move */
 
 /*
  * Known bugs:
- * 5. Release memory when ending in runtime error
- * 6. Release memory of data and symbol
- * 7. Write DC and IC size on start of ob file
+ * 1. Release memory when ending in runtime error
+ * 2. General memory handle
+ * 3. QA
  */
 
 int main(int argc, char* argv[]) {
@@ -81,7 +81,7 @@ int main(int argc, char* argv[]) {
 			rewind(p_file);
 			second_transition_execute(p_file, argv[i], ic, dc);
 		} else {
-			/* Stop */
+			/* TODO: Stop?, Compile next */
 		}
 
 		memory_cleanup();
@@ -89,6 +89,7 @@ int main(int argc, char* argv[]) {
 		free(curr_file);
 	}
 	
+	/* debug */
 	printf("Done compiling");
 
 	exit(0);

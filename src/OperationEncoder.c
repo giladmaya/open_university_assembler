@@ -290,7 +290,6 @@ bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, 
 
 		(*ic)++;
 
-		/*TODO: implement encode operands */
 		if (p_decoded_operation->operation->operands_number > 0) {
 			bool is_valid = encode_memory_word(p_decoded_operation, ic, output_files, NULL);
 
