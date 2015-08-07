@@ -39,16 +39,14 @@ bool can_use_copy_previous = false;
  * 				2. File name
  * Output:		Was transition successfull
  */
-bool first_transition_execute(FILE* pFile, char* file_name) {
-	unsigned int IC;
-	unsigned int DC;
+bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, unsigned int* DC) {
 	int line_number = 0;
 	char line[MAX_LINE_LENGTH];
 	bool success = true;
 
 	/* Step 1 */
-	IC = 0;
-	DC = 0;
+	*IC = 0;
+	*DC = 0;
 
 	/* Runs until end of file */
 	while (!feof(pFile)) {
@@ -59,7 +57,7 @@ bool first_transition_execute(FILE* pFile, char* file_name) {
 				line_info* info = create_line_info(file_name, ++line_number, line);
 
 				/* Process the line */
-				first_transition_process_line(info, &IC, &DC);
+				first_transition_process_line(info, IC, DC);
 
 				success &= !(info->is_error);
 
@@ -69,8 +67,8 @@ bool first_transition_execute(FILE* pFile, char* file_name) {
 	}
 
 	/* Changes the data address according to the code length */
-	update_data_address(IC);
-	update_symbol_address(IC);
+	update_data_address(*IC);
+	update_symbol_address(*IC);
 
 	return success;
 }

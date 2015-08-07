@@ -29,7 +29,6 @@
 #include "DataEncoder.h"
 #include "SymbolTable.h"
 
-
 /*
  * Description: Cleaning up memory between files, global call for all cleanups
  */
@@ -61,6 +60,9 @@ int main(int argc, char* argv[]) {
 	
 	/* Run the Compiler for each file given as arg */
 	for (i=1; i < argc; i++) {
+		unsigned int ic;
+		unsigned int dc;
+		bool should_continue;
 
 		/* Create full file path */
 		curr_file = allocate_string(strlen(argv[i])+strlen(FILE_EXT));
@@ -76,6 +78,16 @@ int main(int argc, char* argv[]) {
 		first_transition_execute(p_file, curr_file);
 		rewind(p_file);
 		second_transition_execute(p_file, argv[i]);
+
+		should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
+
+		if (should_continue) {
+			rewind(p_file);
+			second_transition_execute(p_file, argv[i], ic, dc);
+			fclose(p_file);
+		} else {
+			/* Stop */
+		}
 
 		memory_cleanup();
 		fclose(p_file);
