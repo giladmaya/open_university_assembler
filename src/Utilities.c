@@ -192,7 +192,7 @@ char* get_label(line_info* info) {
 
 }
 
-/* IDAN : Dont we need skip all spaces at the start? */
+/* IDAN : Dont we need skip all spaces at the start!? */
 bool is_empty_or_comment(char* line) {
 	int length = strlen(line);
 
