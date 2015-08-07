@@ -11,9 +11,10 @@
 #include "Types.h"
 #include <stdio.h>
 
-void first_transition_process_data(line_info* info, unsigned int* dc, char* word, char* type, bool is_symbol);
-void process_string(line_info* info, unsigned int* dc);
-void process_numbers(line_info* info, unsigned int* dc);
+void first_transition_process_data(transition_data* transition, char* label, char* type, bool is_symbol);
+void process_string(transition_data* transition);
+void process_numbers(transition_data* transition);
+bool get_next_number(transition_data* transition, int* number);
 
 void add_data_node_to_list(data_node_ptr p_new_data);
 void add_string_data_to_list(char token, unsigned int address);

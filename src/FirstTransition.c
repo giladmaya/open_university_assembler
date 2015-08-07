@@ -13,14 +13,14 @@
  ====================================================================================
  */
 
-#include "FirstTransition.h"
 #include "Consts.h"
-#include "Types.h"
-#include "Utilities.h"
-#include "SymbolTable.h"
 #include "DataEncoder.h"
 #include "Enums.h"
 #include "ExternEncoder.h"
+#include "FirstTransition.h"
+#include "Types.h"
+#include "Utilities.h"
+#include "SymbolTable.h"
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -39,25 +39,30 @@ bool can_use_copy_previous = false;
  * 				2. File name
  * Output:		Was transition successfull
  */
-bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, unsigned int* DC) {
+bool first_transition_execute(FILE* assembler_input_file, char* file_name_without_extension, unsigned int* IC, unsigned int* DC) {
+	transition_data* transition = create_transition_data();
 	int line_number = 0;
-	char line[MAX_LINE_LENGTH];
 	bool success = true;
 
 	/* Step 1 */
-	*IC = 0;
-	*DC = 0;
+	transition->IC = 0;
+	transition->DC = 0;
 
 	/* Runs until end of file */
-	while (!feof(pFile)) {
+	while (!feof(assembler_input_file)) {
+		char line[MAX_LINE_LENGTH];
+
 		/* Step 2 */
-		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
+		if (fgets(line, MAX_LINE_LENGTH + 1, assembler_input_file)) {
+
 			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
-				line_info* info = create_line_info(file_name, ++line_number, line);
+				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
+
+				transition->current_line_information = info;
 
 				/* Process the line */
-				first_transition_process_line(info, IC, DC);
+				first_transition_process_line(transition);
 
 				success &= !(info->is_error);
 
@@ -67,8 +72,11 @@ bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, un
 	}
 
 	/* Changes the data address according to the code length */
-	update_data_address(*IC);
-	update_symbol_address(*IC);
+	update_data_address(transition->IC);
+	update_symbol_address(transition->IC);
+
+	*IC = transition->IC;
+	*DC = transition->DC;
 
 	return success;
 }
@@ -79,46 +87,46 @@ bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, un
  * 				2. Current IC address
  * 				3. Current DC value
  */
-void first_transition_process_line(line_info* info, unsigned int* ic, unsigned int* dc) {
+void first_transition_process_line(transition_data* transition) {
 	char* label = NULL;
-	char* type = NULL;
+	char* line_type = NULL;
 	bool is_symbol = false;
 
 	/*
 	 * Step 3
 	 * The first field is a label
 	 */
-	if ((label = get_label(info)) != NULL) {
+	if ((label = get_label(transition->current_line_information)) != NULL) {
 		/* Step 4 */
 		is_symbol = true;
 	}
 
-	type = get_next_word(info);
+	line_type = get_next_word(transition->current_line_information);
 
 	/*
 	 * Step 5
 	 */
-	if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
-		first_transition_process_data(info, dc, label, type, is_symbol);
+	if ((strcmp(line_type, DATA_OPERATION) == 0) || (strcmp(line_type, STRING_OPERATION) == 0)) {
+		first_transition_process_data(transition, label, line_type, is_symbol);
 	}
 	/*
 	 * Step 8
 	 */
-	else if ((strcmp(type, EXTERN_OPERATION) == 0) || (strcmp(type, ENTRY_OPERATION) == 0)) {
+	else if ((strcmp(line_type, EXTERN_OPERATION) == 0) || (strcmp(line_type, ENTRY_OPERATION) == 0)) {
 		/* Step 9 */
-		if (strcmp(type, EXTERN_OPERATION) == 0) {
-			first_transition_process_extern(info);
+		if (strcmp(line_type, EXTERN_OPERATION) == 0) {
+			first_transition_process_extern(transition);
 		}
 	}
 	/*
 	 * Step 11
 	 */
 	else  {
-		process_operation(info, ic, label, type, is_symbol);
+		process_operation(transition, label, line_type, is_symbol);
 	}
 
-	if (type != NULL) {
-		free(type);
+	if (line_type != NULL) {
+		free(line_type);
 	}
 }
 
@@ -130,20 +138,20 @@ void first_transition_process_line(line_info* info, unsigned int* ic, unsigned i
  * 				4. Type of operation
  * 				5. Does a symbol exists
  */
-void process_operation(line_info* info, unsigned int* ic, char* label, char* type, bool is_symbol) {
+void process_operation(transition_data* transition, char* label, char* type, bool is_symbol) {
 	char* operation_name = NULL;
 	int operation_counter;
 
 	/* Step 11 */
 	if (is_symbol) {
-		symbol_node_ptr p_symbol = create_symbol(label, *ic, false, false);
+		symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 
 		add_symbol_to_list(p_symbol);
 	}
 
-	if (!is_valid_is_operation_line(info->line_str)) {
-		print_compiler_error("Operation line is too long", info);
-		info->is_error = true;
+	if (!is_valid_is_operation_line(transition->current_line_information->line_str)) {
+		print_compiler_error("Operation line is too long", transition->current_line_information);
+		transition->is_compiler_error = true;
 	} else {
 		machine_operation_definition* operation_info;
 
@@ -155,11 +163,11 @@ void process_operation(line_info* info, unsigned int* ic, char* label, char* typ
 
 		if (operation_info != NULL) {
 			/* Calculate operation size */
-			int length = get_operation_size(info, operation_info, operation_counter);
-			*ic += length;
+			int length = get_operation_size(transition->current_line_information, operation_info, operation_counter);
+			transition->IC += length;
 		} else {
-			print_compiler_error("Operation code doesn't exist", info);
-			info->is_error = true;
+			print_compiler_error("Operation code doesn't exist", transition->current_line_information);
+			transition->is_compiler_error = true;
 		}
 	}
 }

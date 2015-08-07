@@ -453,3 +453,7 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 
 	return p_output_file;
 }
+
+bool is_end_of_line(line_info* info) {
+	return info->current_index == info->line_length;
+}

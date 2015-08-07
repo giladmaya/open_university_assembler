@@ -29,10 +29,10 @@ void create_extern_output_file_if_needed(compiler_output_files* output_files, ch
  * 				Adds it into the symbol table
  * Input:		1. Line information
  */
-void first_transition_process_extern(line_info* info) {
+void first_transition_process_extern(transition_data* transition) {
 	symbol_node_ptr p_symbol = NULL;
 
-	char* extern_name = get_next_word(info);
+	char* extern_name = get_next_word(transition->current_line_information);
 
 	if (extern_name != NULL) {
 		p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);

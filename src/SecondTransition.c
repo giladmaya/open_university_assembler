@@ -25,10 +25,9 @@
  * 				2. Name of input file
  */
 void second_transition_execute(FILE* pFile, char* file_name_without_extension, unsigned int previous_transition_ic, unsigned int previous_transition_dc) {
-	int line_number = 0;
-
 	transition_data* transition = create_transition_data();
 	compiler_output_files output_files;
+	int line_number = 0;
 
 	output_files.ob_file = create_output_file(file_name_without_extension, CODE_FILE_EXT);
 	output_files.entry_file = NULL;

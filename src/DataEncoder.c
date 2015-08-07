@@ -105,31 +105,31 @@ void update_data_address(int ic_length) {
  * 				4. Type of data (.string, .data)
  * 				5. Does a symbol exists
  */
-void first_transition_process_data(line_info* info, unsigned int* dc, char* label, char* type, bool is_symbol) {
+void first_transition_process_data(transition_data* transition, char* label, char* type, bool is_symbol) {
 	/* Step 6 */
 	if (is_symbol) {
-		symbol_node_ptr p_symbol = create_symbol(label, *dc, false, true);
+		symbol_node_ptr p_symbol = create_symbol(label, transition->DC, false, true);
 
 		add_symbol_to_list(p_symbol);
 	}
 
-	skip_all_spaces(info);
+	skip_all_spaces(transition->current_line_information);
 
 	/*
 	 * Step 7.
 	 * Extract data according to type
 	 */
-	if (info->current_index > info->line_length) {
-		print_compiler_error("Any data instruction must be followed by data initialization", info);
-		info->is_error = true;
+	if (is_end_of_data_in_line(transition->current_line_information)) {
+		print_compiler_error("Missing data after .string or .data", transition->current_line_information);
+		transition->is_compiler_error = true;
 	}
 	/* This is a string initialization */
 	else if (strcmp(type, STRING_OPERATION) == 0) {
-		process_string(info, dc);
+		process_string(transition);
 	}
 	/* This is a numeric data */
 	else {
-		process_numbers(info, dc);
+		process_numbers(transition);
 	}
 }
 
@@ -139,31 +139,40 @@ void first_transition_process_data(line_info* info, unsigned int* dc, char* labe
  * Input:		1. Line information
  * 				2. Current DC value
  */
-void process_string(line_info* info, unsigned int* dc) {
-	if (info->line_str[info->current_index] != QUOTATION) {
-		print_compiler_error("A string must start with a '\"' token", info);
-		info->is_error = true;
+void process_string(transition_data* transition) {
+	if (transition->current_line_information->line_str[transition->current_line_information->current_index] != QUOTATION) {
+		print_compiler_error("A string must start with a '\"' token", transition->current_line_information);
+		transition->is_compiler_error = true;
 	} else {
-		int data_index = info->current_index + 1;
+		/* Skip quotation mark */
+		transition->current_line_information->current_index++;
 
-		while (data_index < info->line_length) {
-			char token = info->line_str[data_index];
+		while (!is_end_of_line(transition->current_line_information)) {
+			char token =
+					transition->current_line_information->line_str[transition->current_line_information->current_index];
+
 			if (token == END_OF_LINE) {
-				print_compiler_error("A string must end with a '\"' token", info);
-				info->is_error = true;
+				print_compiler_error("A string must end with a '\"' token", transition->current_line_information);
+				transition->is_compiler_error = true;
 				break;
 			} else if (token == QUOTATION) {
+				transition->current_line_information->current_index++;
 				break;
 			} else if (token != QUOTATION) {
-				add_string_data_to_list(token, *dc);
-				(*dc)++;
+				add_string_data_to_list(token, transition->DC);
+				transition->DC++;
 			}
 
-			data_index++;
+			transition->current_line_information->current_index++;
 		}
 
-		add_string_data_to_list(STRING_DATA_END, *dc);
-		(*dc)++;
+		add_string_data_to_list(STRING_DATA_END, transition->DC);
+		transition->DC++;
+
+		if (!is_end_of_data_in_line(transition->current_line_information)) {
+			print_compiler_error("Invalid tokens after .string instruction", transition->current_line_information);
+			transition->is_compiler_error = true;
+		}
 	}
 }
 
@@ -172,61 +181,47 @@ void process_string(line_info* info, unsigned int* dc) {
  * Input:		1. Line information
  * 				2. Current DC value
  */
-void process_numbers(line_info* info, unsigned int* dc) {
-	bool is_valid = true;
+void process_numbers(transition_data* transition) {
+	bool should_process_next_number = true;
 
-	skip_all_spaces(info);
+	skip_all_spaces(transition->current_line_information);
+
+	if (is_end_of_data_in_line(transition->current_line_information)) {
+		print_compiler_error("Invalid .data definition. Missing numbers.", transition->current_line_information);
+		transition->is_compiler_error = true;
+	}
 
 	/* Processes all numbers in line */
-	while ((info->current_index < info->line_length) && is_valid) {
+	while (!is_end_of_line(transition->current_line_information) && should_process_next_number) {
 		char* partial_line = NULL;
-		char* number_str = NULL;
-		int number_str_length;
 		int number;
-		int number_end_index = info->current_index;
 
-		is_valid = false;
+		if (get_next_number(transition, &number))
+		{
+			add_numeric_data_to_list(number, transition->DC++);
 
-		/* The number starts with a + or - sign */
-		if ((info->line_str[info->current_index] == MINUS_SIGN) ||
-				(info->line_str[info->current_index] == PLUS_SIGN)){
-			number_end_index++;
-		}
+			/* Search the next ',' */
+			partial_line =
+					strchr(transition->current_line_information->line_str +
+							transition->current_line_information->current_index, NUMBER_TOKEN_SEPERATOR);
 
-		/* Get digits */
-		while ((number_end_index < info->line_length) && isdigit(info->line_str[number_end_index])) {
-			number_end_index++;
-		}
+			if (partial_line != NULL) {
+				transition->current_line_information->current_index =
+						partial_line - transition->current_line_information->line_str + 1;
 
-		number_str_length = number_end_index - info->current_index;
-
-		number_str = allocate_string(number_str_length);
-
-		strncpy(number_str, info->line_str + info->current_index, number_str_length);
-		number_str[number_str_length] = END_OF_STRING;
-
-		number = atoi(number_str);
-
-		add_numeric_data_to_list(number, (*dc)++);
-
-		info->current_index = number_end_index;
-
-		free(number_str);
-
-		partial_line = strchr(info->line_str + info->current_index, NUMBER_TOKEN_SEPERATOR);
-
-		if (partial_line != NULL) {
-			info->current_index = partial_line - info->line_str + 1;
-
-			is_valid = true;
+				should_process_next_number = true;
+			} else {
+				skip_all_spaces(transition->current_line_information);
+				should_process_next_number = false;
+			}
 		} else {
-			skip_all_spaces(info);
+			should_process_next_number = false;
 		}
 	}
 
-	if (info->current_index < info->line_length) {
-		print_compiler_error(".data syntax is invalid", info);
-		info->is_error = true;
+	if (!is_end_of_line(transition->current_line_information) || should_process_next_number) {
+		print_compiler_error(".data syntax is invalid", transition->current_line_information);
+		transition->is_compiler_error = true;
 	}
 }
 
@@ -248,4 +243,53 @@ void free_data_node_list() {
 	}
 
 	return;
+}
+
+bool get_next_number(transition_data* transition, int* number) {
+	skip_all_spaces(transition->current_line_information);
+
+	/* Reaches end of line while expecting a number */
+	if (is_end_of_line(transition->current_line_information)) {
+		print_compiler_error("Expected number definition", transition->current_line_information);
+		transition->is_compiler_error = true;
+	} else {
+		int number_start_index = transition->current_line_information->current_index;
+		int number_end_index = transition->current_line_information->current_index;
+
+		/* First token of the number is a minus or a plus */
+		if ((transition->current_line_information->line_str[number_start_index] == MINUS_SIGN) ||
+				transition->current_line_information->line_str[number_start_index] == PLUS_SIGN) {
+			number_end_index++;
+		}
+
+		/* Makes sure the next token is a digit */
+		if (!is_end_of_line(transition->current_line_information) &&
+				!isdigit(transition->current_line_information->line_str[number_end_index])) {
+			print_compiler_error("A number must have digits in it", transition->current_line_information);
+			transition->is_compiler_error = true;
+		} else if (!is_end_of_line(transition->current_line_information)){
+			char* number_string = NULL;
+
+			/* Finds all digits */
+			while (isdigit(transition->current_line_information->line_str[number_end_index])) {
+				number_end_index++;
+			}
+
+			/* Last token wasn't part of the number */
+			number_end_index--;
+
+			number_string = allocate_string(number_end_index - number_start_index + 1);
+			strncpy(number_string, transition->current_line_information->line_str + number_start_index, number_end_index - number_start_index + 1);
+			number_string[number_end_index - number_start_index + 1] = END_OF_STRING;
+
+			*number = atoi(number_string);
+			free(number_string);
+
+			transition->current_line_information->current_index = number_end_index + 1;
+
+			return true;
+		}
+	}
+
+	return false;
 }

@@ -12,7 +12,7 @@
 
 void create_extern_output_file_if_needed(compiler_output_files* output_files, char* file_name_without_extension);
 
-void first_transition_process_extern(line_info* info);
+void first_transition_process_extern(transition_data* transition);
 
 void write_extern_to_output_file(char* extern_operand, unsigned int current_address, FILE* output_file);
 
