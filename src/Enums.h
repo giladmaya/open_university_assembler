@@ -11,7 +11,7 @@
 /*
  * Addressing methods
  */
-typedef enum ADDRESS_METHOD
+typedef enum
 {
 	INVALID = -1,
 	IMMEDIATE = 0,
@@ -23,17 +23,25 @@ typedef enum ADDRESS_METHOD
 /*
  * Error codes
  */
-typedef enum ERROR_CODES
+typedef enum
 {
-	COMPILER_BAD_ALLOCATION
+	NONE,
+	COMPILER,
+	BAD_ALLOCATION
 } ERROR_CODES;
 
+/*
+ * ERA options
+ */
 typedef enum {
 	ABSOLUTE = 0,
 	EXTERNAL = 1,
 	RELOCATABLE = 2
 } ERA;
 
+/*
+ * Number of operands
+ */
 typedef enum {
 	NO_OPERANDS = 0,
 	ONE_OPERAND = 1,

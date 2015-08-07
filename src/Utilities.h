@@ -49,4 +49,6 @@ transition_data* create_transition_data();
 
 FILE* create_output_file(char* file_name_without_extension, char* extension);
 
+char* int_to_string(int number);
+
 #endif /* UTILITIES_H_ */

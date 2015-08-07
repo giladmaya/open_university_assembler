@@ -9,6 +9,7 @@
 #define TYPES_H_
 
 #include "Enums.h"
+#include "Consts.h"
 #include <stdbool.h>
 #include <stdio.h>
 
@@ -35,25 +36,23 @@ typedef struct symbol_node {
 } symbol_node;
 
 /*
- * An instruction. The instruction is built out of 12 bits;
+ * Definition of a machine operation
  */
-typedef struct {
-	unsigned int era : 2;
-	unsigned int target_operand_address_method : 2;
-	unsigned int source_operand_address_method : 2;
-	unsigned int op_code : 4;
-	unsigned int group : 2;
-	unsigned int rest : 20;
-} coded_operation;
-
 typedef union {
-	coded_operation operation_bits;
+	struct {
+		unsigned int era : OPERATION_ERA_BITS_LENGTH;
+		unsigned int target_operand_address_method : OPERATION_ADDRESS_METHOD_BITS_LENGTH;
+		unsigned int source_operand_address_method : OPERATION_ADDRESS_METHOD_BITS_LENGTH;
+		unsigned int op_code : OPERATION_OP_CODE_BITS_LENGTH;
+		unsigned int group : OPERATION_GROUP_BITS_LENGTH;
+		unsigned int rest : REST_BITS_LENGTH;
+	} encoded_operation;
 	unsigned int operation_value;
 } coded_operation_union;
 
 typedef struct {
-	unsigned int number : 12;
-	unsigned int rest : 22;
+	unsigned int number : DATA_WORD_BITS_LENGTH;
+	unsigned int rest : REST_BITS_LENGTH;
 } data_value;
 
 typedef union {
