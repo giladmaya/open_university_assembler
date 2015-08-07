@@ -75,10 +75,6 @@ int main(int argc, char* argv[]) {
 			print_runtime_error("Could not open source file");
 		}
 
-		first_transition_execute(p_file, curr_file);
-		rewind(p_file);
-		second_transition_execute(p_file, argv[i]);
-
 		should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
 
 		if (should_continue) {
