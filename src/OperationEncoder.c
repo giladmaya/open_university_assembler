@@ -44,6 +44,9 @@ void second_transition_process_operation(transition_data* transition, compiler_o
 void first_transition_process_operation(transition_data* transition, char* label, bool is_symbol) {
 	/* Step 11 */
 	if (is_symbol) {
+		symbol_node_ptr p_searched_symbol = search_symbol(label);
+
+		if (p_searched_symbol == NULL) {
 			symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 
 			if (p_symbol != NULL) {
@@ -53,6 +56,12 @@ void first_transition_process_operation(transition_data* transition, char* label
 				free(label);
 				return;
 			}
+		} else {
+			print_compiler_error("Each label can be defined only once", transition->current_line_information);
+			transition->is_compiler_error = true;
+			free(label);
+			return;
+		}
 	}
 
 	/* Gets all data about the current operation */

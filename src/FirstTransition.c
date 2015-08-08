@@ -139,6 +139,8 @@ void first_transition_process_line(transition_data* transition) {
 		/* Step 9 */
 		if (strcmp(line_type, EXTERN_OPERATION) == 0) {
 			first_transition_process_extern(transition);
+		} else {
+			first_transition_process_entry(transition);
 		}
 	}
 	/*

@@ -39,7 +39,7 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 	transition->IC = 0;
 
 	/* Reads all code lines */
-	while (!feof(pFile)) {
+	while (!feof(pFile) && !transition->is_runtimer_error && !transition->is_compiler_error) {
 		char line[MAX_LINE_LENGTH];
 
 		/* Step 2 */
@@ -56,19 +56,72 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 		}
 	}
 
-	write_data_to_output_file(output_files.ob_file);
+	if (!transition->is_runtimer_error && !transition->is_compiler_error) {
+		write_data_to_output_file(output_files.ob_file);
 
-	if (output_files.ob_file != NULL) {
-		fclose(output_files.ob_file);
+		if (output_files.ob_file != NULL) {
+			fclose(output_files.ob_file);
+		}
+
+		if (output_files.extern_file != NULL) {
+			fclose(output_files.extern_file);
+		}
+
+		if (output_files.entry_file != NULL) {
+			fclose(output_files.entry_file);
+		}
+	} else {
+		if (output_files.ob_file != NULL) {
+			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(CODE_FILE_EXT));
+
+			fclose(output_files.ob_file);
+			if (full_name != NULL) {
+				strcpy(full_name, file_name_without_extension);
+				strcat(full_name, CODE_FILE_EXT);
+
+				remove(full_name);
+
+				free(full_name);
+			} else {
+				print_runtime_error("Couldn't delete compilation files");
+			}
+
+		}
+
+		if (output_files.extern_file != NULL) {
+			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(EXTERN_FILE_EXT));
+
+			fclose(output_files.extern_file);
+
+			if (full_name != NULL) {
+				strcpy(full_name, file_name_without_extension);
+				strcat(full_name, EXTERN_FILE_EXT);
+
+				remove(full_name);
+
+				free(full_name);
+			} else {
+				print_runtime_error("Couldn't delete compilation files");
+			}
+		}
+
+		if (output_files.entry_file != NULL) {
+			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(ENTRY_FILE_EXT));
+
+			fclose(output_files.entry_file);
+			if (full_name != NULL) {
+				strcpy(full_name, file_name_without_extension);
+				strcat(full_name, ENTRY_FILE_EXT);
+
+				remove(full_name);
+				free(full_name);
+			} else {
+				print_runtime_error("Couldn't delete compilation files");
+			}
+		}
 	}
 
-	if (output_files.extern_file != NULL) {
-		fclose(output_files.extern_file);
-	}
 
-	if (output_files.entry_file != NULL) {
-		fclose(output_files.entry_file);
-	}
 }
 
 /*
@@ -104,7 +157,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	else if (strcmp(type, EXTERN_OPERATION) == 0) {
 		create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
 	} else if (strcmp(type, ENTRY_OPERATION) == 0) {
-		second_transition_process_entry(transition->current_line_information, output_files);
+		second_transition_process_entry(transition, output_files);
 	} else  {
 		transition->current_line_information->current_index = index;
 		second_transition_process_operation(transition, output_files);

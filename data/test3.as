@@ -13,7 +13,7 @@ prn1 1
 sub1 $$, r4
 inc1 -r0
 mov2 -$$,r3
-bne1 L3
+bne1 L3 a
 END: stop1
 STR: .string "abcdef"
 LENGTH: .data 6,-9,15

@@ -18,19 +18,39 @@
  * Input:		1. Line information
  * 				2. Output files
  */
-void second_transition_process_entry(line_info* info, compiler_output_files* output_files) {
-	char* entry_name = get_next_word(info);
+void second_transition_process_entry(transition_data* transition, compiler_output_files* output_files) {
+	char* entry_name = get_next_word(transition->current_line_information);
 
 	/* Search for the entry inside the symbol table */
 	symbol_node_ptr p_symbol = search_symbol(entry_name);
 
 	/* Entry doesn't exists in symbol table*/
 	if (p_symbol == NULL) {
-		print_compiler_error("Invalid entry definition", info);
+		print_compiler_error("Invalid entry definition. Label doesn't exists.", transition->current_line_information);
+		transition->is_compiler_error = true;
 	} else {
-		create_entry_output_file_if_needed(output_files, info->file_name);
+		create_entry_output_file_if_needed(output_files, transition->current_line_information->file_name);
 
 		write_entry_to_output_file(entry_name, p_symbol->current_symbol.address, output_files->entry_file);
+	}
+}
+
+void first_transition_process_entry(transition_data* transition) {
+	char* entry_name = get_next_operand(transition->current_line_information);
+
+	if (entry_name != NULL) {
+		if (is_valid_label(entry_name)) {
+			if (!is_end_of_data_in_line(transition->current_line_information)) {
+				print_compiler_error("Invalid tokens in end of entry definition", transition->current_line_information);
+				transition->is_compiler_error = true;
+			}
+		} else {
+			print_compiler_error("Entry name must be a valid label", transition->current_line_information);
+			transition->is_compiler_error = true;
+		}
+	} else {
+		print_compiler_error("Missing entry name", transition->current_line_information);
+		transition->is_compiler_error = true;
 	}
 }
 

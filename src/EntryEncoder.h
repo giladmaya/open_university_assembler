@@ -10,7 +10,8 @@
 
 #include "Types.h"
 
-void second_transition_process_entry(line_info* info, compiler_output_files* output_files);
+void first_transition_process_entry(transition_data* transition);
+void second_transition_process_entry(transition_data* transition, compiler_output_files* output_files);
 
 void write_entry_to_output_file(char* entry_name, unsigned int address, FILE* output_file);
 void create_entry_output_file_if_needed(compiler_output_files* output_files, char* file_name_without_extension);

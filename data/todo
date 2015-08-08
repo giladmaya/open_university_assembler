@@ -5,7 +5,3 @@ TODO: Known bugs:
 
 QA :
 1. make sure that entry and extern points to a label
-4. make sure that the rgister exists
-5. make sure that lable isnt operand or register name
-6. make sure that lable is defined only ones
-7. make sure that entry and extern only take one param

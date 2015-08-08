@@ -109,15 +109,24 @@ void first_transition_process_data(transition_data* transition, char* label, cha
 
 	/* Step 6 */
 	if (is_symbol) {
-		symbol_node_ptr p_symbol = create_symbol(label, transition->DC, false, true);
+		symbol_node_ptr p_searched_symbol = search_symbol(label);
 
-		if (p_symbol != NULL)
-			add_symbol_to_list(p_symbol);
-		else {
-			transition->is_runtimer_error = true;
+		if (p_searched_symbol == NULL) {
+			symbol_node_ptr p_symbol = create_symbol(label, transition->DC, false, true);
 
-			free(label);
+			if (p_symbol != NULL)
+				add_symbol_to_list(p_symbol);
+			else {
+				transition->is_runtimer_error = true;
 
+				free(label);
+
+				return;
+			}
+
+		} else {
+			print_compiler_error("Each label can be defined only once", transition->current_line_information);
+			transition->is_compiler_error = true;
 			return;
 		}
 	}

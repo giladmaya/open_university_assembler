@@ -35,12 +35,28 @@ void first_transition_process_extern(transition_data* transition) {
 	char* extern_name = get_next_word(transition->current_line_information);
 
 	if (extern_name != NULL) {
-		p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
+		symbol_node_ptr p_searched_symbol = search_symbol(extern_name);
 
-		if (p_symbol != NULL) {
-			add_symbol_to_list(p_symbol);
+		if (p_searched_symbol == NULL) {
+			p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
+
+			if (p_symbol != NULL) {
+				add_symbol_to_list(p_symbol);
+
+				if (!is_end_of_data_in_line(transition->current_line_information)) {
+					print_compiler_error("Invalid tokens after extern definition", transition->current_line_information);
+					transition->is_compiler_error = true;
+					return;
+				}
+			} else {
+				transition->is_runtimer_error = true;
+				free(extern_name);
+				return;
+			}
 		} else {
-			transition->is_runtimer_error = true;
+			print_compiler_error("Each extern can be defined only once", transition->current_line_information);
+			transition->is_compiler_error = true;
+			return;
 		}
 	}
 }
