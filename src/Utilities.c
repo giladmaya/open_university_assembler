@@ -299,18 +299,21 @@ bool is_end_of_data_in_line(line_info* info) {
 }
 /* IDAN : why *do we need it?, its another name for get_lable */
 void skip_label(line_info* info) {
-	get_label(info);
+	char* partial_line = strchr(info->line_str, LABEL_END_TOKEN);
+
+	if (partial_line != NULL) {
+		info->current_index = partial_line - info->line_str + 1;
+	}
 }
 
-bool is_operand_a_label(char* str) {
+bool is_valid_label(char* str) {
 	int i;
 	int len = strlen(str);
 
 	/*
 	 * Make sure that :
 	 * 	1) string start's with a letter
-	 * 	2) string end's with end of label token
-	 * 	3) string is shorter then maximum length (excluding the end of label token)
+	 * 	2) string is shorter then maximum length (excluding the end of label token)
 	 */
 	if (!isalpha(str[0]) || len > LABEL_MAX_LENGTH) {
 		return false;
@@ -327,35 +330,18 @@ bool is_operand_a_label(char* str) {
 	}
 
 	/* All was fine */
-	return true;
+	return !is_operation_name(str) && !is_register(str, len);
 }
 
-bool is_valid_label(char* str) {
-	int i;
-	int len = strlen(str);
-
-	/*
-	 * Make sure that :
-	 * 	1) string start's with a letter
-	 * 	2) string end's with end of label token
-	 * 	3) string is shorter then maximum length (excluding the end of label token)
-	 */
-	if (!isalpha(str[0]) || str[len-1] != LABEL_END_TOKEN || len - 1 > LABEL_MAX_LENGTH) {
-		return false;
-	}
-
-	/*
-	 * We checked the first and last char's, we check the string length,
-	 * Now we will make sure that the rest are alpha numeric
-	 */
-	for (i = 1; i < len - 1; i++) {
-		if (!isalnum(str[i])) {
-			return false;
-		}
-	}
-
-	/* All was fine */
-	return true;
+bool is_operation_name(char* str) {
+	return (strcmp(str, MOV_OPERATION) == 0) || (strcmp(str, CMP_OPERATION) == 0) ||
+			(strcmp(str, ADD_OPERATION) == 0) || (strcmp(str, SUB_OPERATION) == 0) ||
+			(strcmp(str, NOT_OPERATION) == 0) || (strcmp(str, CLR_OPERATION) == 0) ||
+			(strcmp(str, LEA_OPERATION) == 0) || (strcmp(str, INC_OPERATION) == 0) ||
+			(strcmp(str, DEC_OPERATION) == 0) || (strcmp(str, JMP_OPERATION) == 0) ||
+			(strcmp(str, BNE_OPERATION) == 0) || (strcmp(str, RED_OPERATION) == 0) ||
+			(strcmp(str, PRN_OPERATION) == 0) || (strcmp(str, JSR_OPERATION) == 0) ||
+			(strcmp(str, RTS_OPERATION) == 0) || (strcmp(str, STOP_OPERATION) == 0);
 }
 
 bool is_valid_is_operation_line (char* str) {
@@ -369,7 +355,7 @@ bool is_valid_is_operation_line (char* str) {
 	}
 
 	/* All was fine */
-	return true;
+	return !is_operation_name(str) && !is_register(str, strlen(str));
 }
 
 void replace_content(char** current_string, char* new_string) {

@@ -100,14 +100,28 @@ void first_transition_process_line(transition_data* transition) {
 	char* label = NULL;
 	char* line_type = NULL;
 	bool is_symbol = false;
+	char* partial_line;
 
 	/*
 	 * Step 3
 	 * The first field is a label
 	 */
-	if ((label = get_label(transition->current_line_information)) != NULL) {
-		/* Step 4 */
-		is_symbol = true;
+	if ((partial_line = strchr(transition->current_line_information->line_str, LABEL_END_TOKEN)) != NULL) {
+		int label_length = partial_line - transition->current_line_information->line_str;
+
+		label = allocate_string(label_length);
+		strncpy(label, transition->current_line_information->line_str, label_length);
+		label[label_length] = END_OF_STRING;
+
+		if (is_valid_label(label)) {
+			/* Step 4 */
+			is_symbol = true;
+			transition->current_line_information->current_index = label_length + 1;
+		} else {
+			print_compiler_error("Invalid label definition", transition->current_line_information);
+			transition->is_compiler_error = true;
+			return;
+		}
 	}
 
 	line_type = get_next_word(transition->current_line_information);

@@ -6,7 +6,7 @@ mov1 #7,r1
 mov1 r2,r33
 MAIN: mov2 D, W
 add1 r,2:
-mov1 $$,r4
+MOV:mov1 $$,r4
 LOOP: jmp1 L3
 prn1 #-5
 prn1 1
