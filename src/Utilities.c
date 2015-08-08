@@ -263,7 +263,7 @@ bool is_valid_label(char* str) {
 	 * We checked the first and last char's, we check the string length,
 	 * Now we will make sure that the rest are alpha numeric
 	 */
-	for (i = 1; i < len - 1; i++) {
+	for (i = 1; i < len; i++) {
 		if (!isalnum(str[i])) {
 			return false;
 		}
