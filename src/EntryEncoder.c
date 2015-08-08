@@ -31,6 +31,11 @@ void second_transition_process_entry(transition_data* transition, compiler_outpu
 	} else {
 		create_entry_output_file_if_needed(output_files, transition->current_line_information->file_name);
 
+		if (output_files->entry_file == NULL) {
+			transition->is_runtimer_error = true;
+			return;
+		}
+
 		write_entry_to_output_file(entry_name, p_symbol->current_symbol.address, output_files->entry_file);
 	}
 }

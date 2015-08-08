@@ -29,7 +29,16 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 	compiler_output_files output_files;
 	int line_number = 0;
 
+	if (transition == NULL) {
+		return;
+	}
+
 	output_files.ob_file = create_output_file(file_name_without_extension, CODE_FILE_EXT);
+
+	if (output_files.ob_file == NULL) {
+		return;
+	}
+
 	output_files.entry_file = NULL;
 	output_files.extern_file = NULL;
 
@@ -165,6 +174,10 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	 */
 	else if (strcmp(type, EXTERN_OPERATION) == 0) {
 		create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
+
+		if (output_files->extern_file == NULL) {
+			transition->is_runtimer_error  = true;
+		}
 	} else if (strcmp(type, ENTRY_OPERATION) == 0) {
 		second_transition_process_entry(transition, output_files);
 	} else  {

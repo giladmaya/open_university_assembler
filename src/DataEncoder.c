@@ -40,31 +40,44 @@ void add_data_node_to_list(data_node_ptr p_new_data) {
 /*
  * Description: Adds a string to the data list
  * Input:		A character of the string
+ * Output:		Was add successful
  */
-void add_string_data_to_list(char data, unsigned int address) {
+bool add_string_data_to_list(char data, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
-	p_data->current_data.encoded_data.bits.number = data;
-	p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
-	p_data->current_data.address = address;
-	p_data->next = NULL;
+	if (p_data != NULL) {
+		p_data->current_data.encoded_data.bits.number = data;
+		p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
+		p_data->current_data.address = address;
+		p_data->next = NULL;
 
-	add_data_node_to_list(p_data);
+		add_data_node_to_list(p_data);
+
+		return true;
+	} else {
+		return false;
+	}
 }
 
 /*
  * Description: Adds a numeric data to the list
  * Input:		A number
  */
-void add_numeric_data_to_list(int number, unsigned int address) {
+bool add_numeric_data_to_list(int number, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
-	p_data->current_data.encoded_data.bits.number = number;
-	p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
-	p_data->current_data.address = address;
-	p_data->next = NULL;
+	if (p_data != NULL) {
+		p_data->current_data.encoded_data.bits.number = number;
+		p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
+		p_data->current_data.address = address;
+		p_data->next = NULL;
 
-	add_data_node_to_list(p_data);
+		add_data_node_to_list(p_data);
+
+		return true;
+	} else {
+		return false;
+	}
 }
 
 /*
@@ -162,6 +175,8 @@ void process_string(transition_data* transition) {
 		print_compiler_error("A string must start with a '\"' token", transition->current_line_information);
 		transition->is_compiler_error = true;
 	} else {
+		bool success;
+
 		/* Skip quotation mark */
 		transition->current_line_information->current_index++;
 
@@ -177,14 +192,26 @@ void process_string(transition_data* transition) {
 				transition->current_line_information->current_index++;
 				break;
 			} else if (token != QUOTATION) {
-				add_string_data_to_list(token, transition->DC);
-				transition->DC++;
+				success = add_string_data_to_list(token, transition->DC);
+
+				if (!success) {
+					transition->is_runtimer_error = true;
+					return;
+				} else {
+					transition->DC++;
+				}
 			}
 
 			transition->current_line_information->current_index++;
 		}
 
-		add_string_data_to_list(STRING_DATA_END, transition->DC);
+		success = add_string_data_to_list(STRING_DATA_END, transition->DC);
+
+		if (!success) {
+			transition->is_runtimer_error = true;
+			return;
+		}
+
 		transition->DC++;
 
 		if (!is_end_of_data_in_line(transition->current_line_information)) {
@@ -201,6 +228,7 @@ void process_string(transition_data* transition) {
  */
 void process_numbers(transition_data* transition) {
 	bool should_process_next_number = true;
+	bool success;
 
 	skip_all_spaces(transition->current_line_information);
 
@@ -216,7 +244,12 @@ void process_numbers(transition_data* transition) {
 
 		if (get_next_number(transition, &number))
 		{
-			add_numeric_data_to_list(number, transition->DC++);
+			success = add_numeric_data_to_list(number, transition->DC++);
+
+			if (!success) {
+				transition->is_runtimer_error = true;
+				return;
+			}
 
 			/* Search the next ',' */
 			partial_line =

@@ -17,8 +17,8 @@ void process_numbers(transition_data* transition);
 bool get_next_number(transition_data* transition, int* number);
 
 void add_data_node_to_list(data_node_ptr p_new_data);
-void add_string_data_to_list(char token, unsigned int address);
-void add_numeric_data_to_list(int number, unsigned int address);
+bool add_string_data_to_list(char token, unsigned int address);
+bool add_numeric_data_to_list(int number, unsigned int address);
 
 void update_data_address(int ic_length);
 

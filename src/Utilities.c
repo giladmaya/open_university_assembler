@@ -152,7 +152,7 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 	int result_length;
 	int remainder = 0;
 
-	result = (char*)malloc(sizeof(char) * 1);
+	result = allocate_string(1);
 
 	if (result == NULL) {
 		print_runtime_error("Could not allocate memory. Exit program");
@@ -191,7 +191,7 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 	result_length = strlen(result);
 
 	while (result_length < minimal_returned_length) {
-		current_token = (char*)malloc(sizeof(char) * (result_length + 1));
+		current_token = allocate_string(result_length);
 		current_token[0] = '0';
 		current_token[1] = END_OF_STRING;
 
@@ -232,8 +232,13 @@ bool is_end_of_data_in_line(line_info* info) {
 
 	return is_end;
 }
-/* IDAN : why *do we need it?, its another name for get_lable */
+
+/*
+ * Description: Skips the label
+ * Input:		Line information
+ */
 void skip_label(line_info* info) {
+	/* Search the label end token */
 	char* partial_line = strchr(info->line_str, LABEL_END_TOKEN);
 
 	if (partial_line != NULL) {
@@ -279,18 +284,13 @@ bool is_operation_name(char* str) {
 			(strcmp(str, RTS_OPERATION) == 0) || (strcmp(str, STOP_OPERATION) == 0);
 }
 
-bool is_valid_is_operation_line (char* str) {
+/*
+ * Description: Checks if this is a valid operation line
+ * Input:		1. Line information
+ */
+bool is_valid_is_operation_line (line_info* info) {
 
-	/*
-	 * Make sure that :
-	 * 	1) string is shorter then maximum length
-	 */
-	if (strlen(str) > OPERATION_LINE_MAX_LENGTH) {
-		return false;
-	}
-
-	/* All was fine */
-	return !is_operation_name(str) && !is_register(str, strlen(str));
+	return info->line_length < OPERATION_LINE_MAX_LENGTH;
 }
 
 void replace_content(char** current_string, char* new_string) {
@@ -307,12 +307,14 @@ void replace_content(char** current_string, char* new_string) {
 transition_data* create_transition_data() {
 	transition_data* transition = (transition_data*)allocate_memory(sizeof(transition_data));
 
-	transition->IC = 0;
-	transition->DC = 0;
-	transition->prev_operation_operand = NULL;
-	transition->is_compiler_error = false;
-	transition->is_runtimer_error = false;
-	transition->current_line_information = NULL;
+	if (transition != NULL) {
+		transition->IC = 0;
+		transition->DC = 0;
+		transition->prev_operation_operand = NULL;
+		transition->is_compiler_error = false;
+		transition->is_runtimer_error = false;
+		transition->current_line_information = NULL;
+	}
 
 	return transition;
 }
@@ -322,16 +324,18 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 
 	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(extension));
 
-	/* Creates code file output name */
-	strcpy(file_name, file_name_without_extension);
-	strcat(file_name, extension);
+	if (file_name != NULL) {
+		/* Creates code file output name */
+		strcpy(file_name, file_name_without_extension);
+		strcat(file_name, extension);
 
-	p_output_file = fopen(file_name, WRITE_MODE);
+		p_output_file = fopen(file_name, WRITE_MODE);
 
-	free(file_name);
+		free(file_name);
 
-	if (!p_output_file) {
-		print_runtime_error("Cannot create output file");
+		if (!p_output_file) {
+			print_runtime_error("Cannot create output file");
+		}
 	}
 
 	return p_output_file;

@@ -46,6 +46,10 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 	int line_number = 0;
 	bool success = true;
 
+	if (transition == NULL) {
+		return false;
+	}
+
 	/* Step 1 */
 	transition->IC = 0;
 	transition->DC = 0;

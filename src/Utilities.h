@@ -35,7 +35,7 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 bool is_valid_label(char* str);
 bool is_operation_name(char* str);
 
-bool is_valid_is_operation_line (char* str);
+bool is_valid_is_operation_line (line_info* info);
 
 void replace_content(char** current_string, char* new_string);
 

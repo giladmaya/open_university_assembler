@@ -42,6 +42,12 @@ void second_transition_process_operation(transition_data* transition, compiler_o
  * 				3. Does label exist
  */
 void first_transition_process_operation(transition_data* transition, char* label, bool is_symbol) {
+	if (!is_valid_is_operation_line(transition->current_line_information)) {
+		print_compiler_error("Line exceeds max length", transition->current_line_information);
+		transition->is_compiler_error = true;
+		return;
+	}
+
 	/* Step 11 */
 	if (is_symbol) {
 		symbol_node_ptr p_searched_symbol = search_symbol(label);
@@ -165,13 +171,17 @@ decoded_operation* get_decoded_operation(transition_data* transition) {
 
 						current_operation = allocate_memory(sizeof(decoded_operation));
 
-						/* Initialize the operation according to data extracted from line */
-						current_operation->operation = p_operation_information;
-						current_operation->source_operand = source_operand;
-						current_operation->source_operand_address_method = source_operand_address_method;
-						current_operation->target_operand = target_operand;
-						current_operation->target_operand_address_method = target_operand_address_method;
-						current_operation->times = times;
+						if (current_operation == NULL) {
+							transition->is_runtimer_error = true;
+						} else {
+							/* Initialize the operation according to data extracted from line */
+							current_operation->operation = p_operation_information;
+							current_operation->source_operand = source_operand;
+							current_operation->source_operand_address_method = source_operand_address_method;
+							current_operation->target_operand = target_operand;
+							current_operation->target_operand_address_method = target_operand_address_method;
+							current_operation->times = times;
+						}
 					}
 				}
 			}
@@ -446,7 +456,13 @@ bool are_operand_methods_allowed_in_operation(decoded_operation* current_operati
 	}
 }
 
-/* TODO : comments */
+/*
+ * Description: Encodes an operation into its output file
+ * Input:		1. Current transition data
+ * 				2. Decoded operation
+ * 				3. Output files
+ * Output:		Was the operation encoded successfully
+ */
 bool encode_operation(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
 	encoded_operation coded_op;
 	int i;
@@ -466,7 +482,7 @@ bool encode_operation(transition_data* transition, decoded_operation* p_decoded_
 		transition->IC++;
 
 		if (p_decoded_operation->operation->operands_number > 0) {
-			bool is_valid = encode_memory_word(transition, p_decoded_operation, output_files);
+			bool is_valid = encode_operands(transition, p_decoded_operation, output_files);
 
 			if (!is_valid) {
 				return is_valid;
@@ -478,8 +494,14 @@ bool encode_operation(transition_data* transition, decoded_operation* p_decoded_
 	return true;
 }
 
-/* TODO : comments */
-bool encode_memory_word(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
+/*
+ * Description: Encodes operands into output files
+ * Input:		1. Current transition data
+ * 				2. Decoded operation
+ * 				3. Output files
+ * Output:		Were operands encoded successfully
+ */
+bool encode_operands(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
 	bool is_valid;
 
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
@@ -516,7 +538,13 @@ bool encode_memory_word(transition_data* transition, decoded_operation* p_decode
 	return is_valid;
 }
 
-/* TODO : comments */
+/*
+ * Description: Encodes a direct operand
+ * Input:		1. Current transition
+ * 				2. Direct operand
+ * 				3. Output files
+ * Output:		Was operand encoded successfully
+ */
 bool encode_direct(transition_data* transition, char* operand, compiler_output_files* output_files) {
 	symbol_node_ptr p_symbol = search_symbol(operand);
 
@@ -534,6 +562,11 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 
 			create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
 
+			if (output_files->extern_file == NULL) {
+				transition->is_runtimer_error  = true;
+				return false;
+			}
+
 			write_extern_to_output_file(operand, transition->IC + ADDRESS_START, output_files->extern_file);
 		} else {
 
@@ -548,7 +581,14 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 	}
 }
 
-/* TODO : comments */
+/*
+ * Description: Encodes register operands
+ * Input:		1. Current transition
+ * 				2. Source register
+ * 				3. Target register
+ * 				3. Output file
+ * Output:		Were operands encoded successfully
+ */
 bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file) {
 	memory_word word;
 
@@ -572,7 +612,13 @@ bool encode_registers(transition_data* transition, char* source_register, char* 
 	return true;
 }
 
-/* TODO : comments */
+/*
+ * Description: Encodes a immediate number
+ * Input:		1. Current transition
+ * 				2. Immediate operand
+ * 				3. Output file
+ * Output:		Was operand encoded successfully
+ */
 bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) {
 	int number;
 	memory_word word;
@@ -588,7 +634,12 @@ bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) 
 	return true;
 }
 
-/* TODO : comments */
+/*
+ * Description: Writes encoding into output file
+ * Input:		1. Address in base 10
+ * 				2. Memory word value in base 10
+ * 				3. Output file
+ */
 void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_file) {
 	char* base4_value;
 
