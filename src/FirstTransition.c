@@ -15,6 +15,7 @@
 
 #include "Consts.h"
 #include "DataEncoder.h"
+#include "EntryEncoder.h"
 #include "Enums.h"
 #include "ExternEncoder.h"
 #include "FirstTransition.h"
