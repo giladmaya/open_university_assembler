@@ -39,7 +39,7 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 	transition->IC = 0;
 
 	/* Reads all code lines */
-	while (!feof(pFile) && !transition->is_runtimer_error && !transition->is_compiler_error) {
+	while (!feof(pFile) && !transition->is_runtimer_error) {
 		char line[MAX_LINE_LENGTH];
 
 		/* Step 2 */
