@@ -35,7 +35,8 @@ bool is_register(char* operand, int length);
 
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base, int minimal_returned_length);
 
-bool is_valid_lable (char* str);
+bool is_valid_label (char* str);
+bool is_operand_a_label(char* str);
 
 bool is_valid_is_operation_line (char* str);
 

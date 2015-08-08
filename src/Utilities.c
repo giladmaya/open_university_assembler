@@ -114,7 +114,7 @@ char* get_label(line_info* info) {
 	char* label = get_next_word(info);
 
 	/* Return a label only if its valid */
-	if (is_valid_lable(label)) {
+	if (is_valid_label(label)) {
 		/* Remove ':' token from the string */
 		int length = strlen(label);
 		label[length - 1] = END_OF_STRING;
@@ -302,7 +302,35 @@ void skip_label(line_info* info) {
 	get_label(info);
 }
 
-bool is_valid_lable (char* str) {
+bool is_operand_a_label(char* str) {
+	int i;
+	int len = strlen(str);
+
+	/*
+	 * Make sure that :
+	 * 	1) string start's with a letter
+	 * 	2) string end's with end of label token
+	 * 	3) string is shorter then maximum length (excluding the end of label token)
+	 */
+	if (!isalpha(str[0]) || len > LABEL_MAX_LENGTH) {
+		return false;
+	}
+
+	/*
+	 * We checked the first and last char's, we check the string length,
+	 * Now we will make sure that the rest are alpha numeric
+	 */
+	for (i = 1; i < len - 1; i++) {
+		if (!isalnum(str[i])) {
+			return false;
+		}
+	}
+
+	/* All was fine */
+	return true;
+}
+
+bool is_valid_label(char* str) {
 	int i;
 	int len = strlen(str);
 

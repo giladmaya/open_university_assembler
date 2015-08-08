@@ -344,8 +344,12 @@ ADDRESS_METHOD get_address_method(transition_data* transition, char* operand) {
 				return COPY_PREVIOUS;
 			} else if (is_register(operand, operand_length)) {
 				return DIRECT_REGISTER;
-			} else {
+			} else if (is_operand_a_label(operand)) {
 				return DIRECT;
+			} else {
+				print_compiler_error("Operand isn't a valid label, register, number or $$", transition->current_line_information);
+				transition->is_compiler_error = true;
+				return INVALID_ADDRESS_METHOD;
 			}
 		} else {
 			print_compiler_error("Operand cannot be an empty string", transition->current_line_information);
