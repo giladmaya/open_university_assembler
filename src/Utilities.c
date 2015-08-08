@@ -168,13 +168,9 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 		remainder = base10_number - temp * target_base;
 		base10_number = temp;
 
-		current_token = (char*)malloc(sizeof(char) * (result_length + 1));
+		current_token = allocate_string(result_length);
 
-		if (current_token == NULL) {
-			/*TODO: bad alloc */
-			/*??*/
-			print_runtime_error("Could not allocate memory. Exit program");
-		} else {
+		if (current_token != NULL) {
 			current_token[0] = '0' + remainder;
 			current_token[1] = END_OF_STRING;
 
@@ -182,6 +178,12 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 
 			free(result);
 			result = current_token;
+		} else {
+			if (result != NULL) {
+				free(result);
+			}
+
+			return NULL;
 		}
 	}
 
