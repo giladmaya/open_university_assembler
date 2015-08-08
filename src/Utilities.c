@@ -80,23 +80,23 @@ line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 	return info;
 }
 
-/* IDAN : Dont we need skip all spaces at the start!? */
+/*
+ * Description: Checks if this is an empty line or a comment
+ * Input:		The line to check
+ * Output:		Is this an empty line or a comment
+ */
 bool is_empty_or_comment(char* line) {
+	int i;
 	int length = strlen(line);
 
-	if (line[0] == COMMENT) {
-		return true;
-	} else {
-		int i;
-
-		for (i = 0; i < length; i++) {
-			if (!isspace(line[i])) {
-				return false;
-			}
+	/* Check's there is a token that isn't a space */
+	for (i = 0; i < length; i++) {
+		if (!isspace(line[i])) {
+			return line[i] == COMMENT;
 		}
-
-		return true;
 	}
+
+	return true;
 }
 
 char* get_next_operand(transition_data* transition) {

@@ -8,6 +8,8 @@
 #ifndef TYPES_H_
 #define TYPES_H_
 
+/* TODO: Consider explaining data structures */
+
 #include "Enums.h"
 #include "Consts.h"
 #include <stdbool.h>
@@ -25,19 +27,14 @@ typedef struct
 	unsigned int address;
 } symbol;
 
+/* A symbol node in the symbol table */
 typedef struct symbol_node* symbol_node_ptr;
-
-/*
- * A symbol node in the symbol table.
- */
 typedef struct symbol_node {
 	symbol current_symbol;
 	symbol_node_ptr next;
 } symbol_node;
 
-/*
- * Definition of a machine operation
- */
+/* Definition of a machine operation */
 typedef union {
 	struct {
 		unsigned int era : OPERATION_ERA_BITS_LENGTH;
@@ -65,19 +62,14 @@ typedef struct data {
 	unsigned int address;
 } data_definition;
 
+/* Data Table Node */
 typedef struct data_node* data_node_ptr;
-
-/*
- * Data Table Node
- */
 typedef struct data_node {
 	data_definition current_data;
 	data_node_ptr next;
 } data_node;
 
-/*
- * Holds the line processing state
- */
+/* Holds the line processing state */
 typedef struct line_info {
 	char* line_str;
 	int line_length;
@@ -86,28 +78,21 @@ typedef struct line_info {
 	char* file_name;
 } line_info;
 
-/*
- * Holds the definition of the machine operation as instructed in the manual
- */
+/* Holds the definition of the machine operation as instructed in the manual */
 typedef struct {
 	char* name;
 	unsigned int code;
 	unsigned int operands_number;
 } machine_operation_definition;
 
+/* Machine operation definitions node */
 typedef struct operation_node* operation_information_node_ptr;
-
-/*
- * Machine operation definitions node
- */
 typedef struct operation_node {
 	machine_operation_definition data;
 	operation_information_node_ptr next;
 } operation_information_node;
 
-/*
- * Holds data of decoded operation
- */
+/* Holds data of decoded operation */
 typedef struct {
 	machine_operation_definition* operation;
 	int times;
@@ -117,6 +102,7 @@ typedef struct {
 	ADDRESS_METHOD target_operand_address_method;
 } decoded_operation;
 
+/* Presentation of operand memory word*/
 typedef union {
 	struct {
 		unsigned int era : OPERATION_ERA_BITS_LENGTH;
@@ -130,20 +116,16 @@ typedef union {
 		unsigned int rest : REST_BITS_LENGTH;
 	} non_register_address;
 	unsigned int value;
-} memory_word;
+} operand_memory_word;
 
-/*
- * Holds output files
- */
+/* Holds output files */
 typedef struct {
 	FILE* extern_file;
 	FILE* entry_file;
 	FILE* ob_file;
 } compiler_output_files;
 
-/*
- * Holds transition data
- */
+/* Holds transition data */
 typedef struct {
 	char* prev_operation_operand;
 	ADDRESS_METHOD prev_operand_address_method;

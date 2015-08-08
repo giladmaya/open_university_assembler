@@ -27,32 +27,24 @@
 #define ADDRESS_START 100
 #define NO_ADDRESS 0
 
-/*
- * Label definitions
- */
+/* Label definitions */
 #define LABEL_END_TOKEN ':'
 #define LABEL_MAX_LENGTH 30
 
 #define END_OF_LINE '\n'
 #define END_OF_STRING '\0'
 
-/*
- * A comment line
- */
+/* A comment line */
 #define COMMENT ';'
 
-/*
- * Data definition handling
- */
+/* Data definition handling */
 #define MINUS_SIGN '-'
 #define PLUS_SIGN '+'
 #define NUMBER_TOKEN_SEPERATOR ','
 #define QUOTATION '\"'
 #define STRING_DATA_END 0
 
-/*
- * Memory word bits
- */
+/* Memory word bits */
 #define MEMORY_WORD 12
 #define DATA_WORD_BITS_LENGTH MEMORY_WORD
 #define OPERATION_GROUP_BITS_LENGTH 2
@@ -63,9 +55,7 @@
 #define OPERAND_NON_REGISTER_BITS_LENGTH 10
 #define REST_BITS_LENGTH 20
 
-/*
- * Operation definitions
- */
+/* Operation definitions */
 #define OPERATION_LINE_MAX_LENGTH 80
 #define OPERAND_SEPERATOR ','
 #define IMMEDIATE_TOKEN '#'
@@ -91,26 +81,20 @@
 #define RTS_OPERATION "rts"
 #define STOP_OPERATION "stop"
 
-/*
- * Instruction
- */
+/* Instruction */
 #define ENTRY_OPERATION ".entry"
 #define STRING_OPERATION ".string"
 #define DATA_OPERATION ".data"
 #define EXTERN_OPERATION ".extern"
 
-/*
- * File usage
- */
+/* File usage */
 #define READ_ONLY_MODE "r"
 #define WRITE_MODE "w"
 
 /* Input code file extension */
 #define FILE_EXT ".as"
 
-/*
- * Output file extensions
- */
+/* Output file extensions */
 #define EXTERN_FILE_EXT ".ext"
 #define CODE_FILE_EXT ".ob"
 #define ENTRY_FILE_EXT ".ent"

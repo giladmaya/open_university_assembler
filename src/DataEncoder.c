@@ -40,11 +40,12 @@ void add_data_node_to_list(data_node_ptr p_new_data) {
 /*
  * Description: Adds a string to the data list
  * Input:		A character of the string
- * Output:		Was add successful
+ * Output:		Was the add successful
  */
 bool add_string_data_to_list(char data, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
+	/* if we managed to create a new node, insert values and add to list */
 	if (p_data != NULL) {
 		p_data->current_data.encoded_data.bits.number = data;
 		p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
@@ -62,10 +63,12 @@ bool add_string_data_to_list(char data, unsigned int address) {
 /*
  * Description: Adds a numeric data to the list
  * Input:		A number
+ * Output:		Was the add successful
  */
 bool add_numeric_data_to_list(int number, unsigned int address) {
 	data_node_ptr p_data = (data_node_ptr)allocate_memory(sizeof(data_node));
 
+	/* if we managed to create a new node, insert values and add to list */
 	if (p_data != NULL) {
 		p_data->current_data.encoded_data.bits.number = number;
 		p_data->current_data.encoded_data.bits.rest = NO_ADDRESS;
@@ -89,9 +92,7 @@ void write_data_to_output_file(FILE* output_file) {
 
 	while (p_current_data != NULL) {
 		data_definition data = p_current_data->current_data;
-
 		print_encoding_to_file(data.address, data.encoded_data.value, output_file);
-
 		p_current_data = p_current_data->next;
 	}
 }
@@ -105,7 +106,6 @@ void update_data_address(int ic_length) {
 
 	while (p_current != NULL) {
 		p_current->current_data.address += ic_length + ADDRESS_START;
-
 		p_current = p_current->next;
 	}
 }
@@ -122,18 +122,18 @@ void first_transition_process_data(transition_data* transition, char* label, cha
 
 	/* Step 6 */
 	if (is_symbol) {
+		/* Check if symbol exists in symbol table*/
 		symbol_node_ptr p_searched_symbol = search_symbol(label);
 
+		/* If symbol does not exist in symbol table, create it and add it */
 		if (p_searched_symbol == NULL) {
 			symbol_node_ptr p_symbol = create_symbol(label, transition->DC, false, true);
 
-			if (p_symbol != NULL)
+			if (p_symbol != NULL) {
 				add_symbol_to_list(p_symbol);
-			else {
+			} else {
 				transition->is_runtimer_error = true;
-
 				free(label);
-
 				return;
 			}
 
@@ -171,6 +171,7 @@ void first_transition_process_data(transition_data* transition, char* label, cha
  * 				2. Current DC value
  */
 void process_string(transition_data* transition) {
+	/* Check if the string starts with " */
 	if (transition->current_line_information->line_str[transition->current_line_information->current_index] != QUOTATION) {
 		print_compiler_error("A string must start with a '\"' token", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -180,9 +181,9 @@ void process_string(transition_data* transition) {
 		/* Skip quotation mark */
 		transition->current_line_information->current_index++;
 
+		/* Keep scanning till end of line */
 		while (!is_end_of_line(transition->current_line_information)) {
-			char token =
-					transition->current_line_information->line_str[transition->current_line_information->current_index];
+			char token = transition->current_line_information->line_str[transition->current_line_information->current_index];
 
 			if (token == END_OF_LINE) {
 				print_compiler_error("A string must end with a '\"' token", transition->current_line_information);
@@ -205,8 +206,8 @@ void process_string(transition_data* transition) {
 			transition->current_line_information->current_index++;
 		}
 
+		/* Add string to list or die */
 		success = add_string_data_to_list(STRING_DATA_END, transition->DC);
-
 		if (!success) {
 			transition->is_runtimer_error = true;
 			return;
@@ -232,6 +233,7 @@ void process_numbers(transition_data* transition) {
 
 	skip_all_spaces(transition->current_line_information);
 
+	/* Make sure .data contains numbers */
 	if (is_end_of_data_in_line(transition->current_line_information)) {
 		print_compiler_error("Invalid .data definition. Missing numbers.", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -242,8 +244,7 @@ void process_numbers(transition_data* transition) {
 		char* partial_line = NULL;
 		int number;
 
-		if (get_next_number(transition, &number))
-		{
+		if (get_next_number(transition, &number)) {
 			success = add_numeric_data_to_list(number, transition->DC++);
 
 			if (!success) {
@@ -256,10 +257,9 @@ void process_numbers(transition_data* transition) {
 					strchr(transition->current_line_information->line_str +
 							transition->current_line_information->current_index, NUMBER_TOKEN_SEPERATOR);
 
+			/* Found ',' and scan another number */
 			if (partial_line != NULL) {
-				transition->current_line_information->current_index =
-						partial_line - transition->current_line_information->line_str + 1;
-
+				transition->current_line_information->current_index = partial_line - transition->current_line_information->line_str + 1;
 				should_process_next_number = true;
 			} else {
 				skip_all_spaces(transition->current_line_information);
@@ -270,6 +270,7 @@ void process_numbers(transition_data* transition) {
 		}
 	}
 
+	/* If it's not end of line or we need to get another number, throw an error */
 	if (!is_end_of_line(transition->current_line_information) || should_process_next_number) {
 		print_compiler_error(".data syntax is invalid", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -277,21 +278,17 @@ void process_numbers(transition_data* transition) {
 }
 
 /*
- * Description: Free list memory
+ * Description: Free memory list
  */
 void free_data_node_list() {
 	data_node_ptr p_cleaner_data = p_data_head;
 
+	/* Clean nodes until no more nodes */
 	while (p_data_head) {
-
 		p_cleaner_data = p_data_head;
-
-		/* Move next */
 		p_data_head = p_data_head->next;
-
 		free (p_cleaner_data);
 	}
-
 	return;
 }
 
@@ -334,11 +331,17 @@ bool get_next_number(transition_data* transition, int* number) {
 			/* Last token wasn't part of the number */
 			number_end_index--;
 
+			/* Copying the number from the line into a new memory space, or die */
 			number_string = allocate_string(number_end_index - number_start_index + 1);
+			if (!number_string) {
+				transition->is_runtimer_error = true;
+				return false;
+			}
+
 			strncpy(number_string, transition->current_line_information->line_str + number_start_index, number_end_index - number_start_index + 1);
 			number_string[number_end_index - number_start_index + 1] = END_OF_STRING;
-
 			*number = atoi(number_string);
+
 			free(number_string);
 
 			transition->current_line_information->current_index = number_end_index + 1;
@@ -346,6 +349,5 @@ bool get_next_number(transition_data* transition, int* number) {
 			return true;
 		}
 	}
-
 	return false;
 }

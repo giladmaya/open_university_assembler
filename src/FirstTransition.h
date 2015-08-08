@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <stdbool.h>
 
+/* TODO: Comments in all file */
+
 bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, unsigned int* DC);
 
 void first_transition_process_line(transition_data* transition);

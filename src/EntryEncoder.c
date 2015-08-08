@@ -40,20 +40,31 @@ void second_transition_process_entry(transition_data* transition, compiler_outpu
 	}
 }
 
+/*
+ * Description: Processes an entry line in the first transition
+ * Input:		1. Line information
+ */
 void first_transition_process_entry(transition_data* transition) {
 	char* entry_name = get_next_word(transition);
 
+	/* If entry was found*/
 	if (entry_name != NULL) {
+		/* Is entry valid? */
 		if (is_valid_label(entry_name)) {
+			/* Are we at line end?, if so, its an error, and if not, we are done */
 			if (!is_end_of_data_in_line(transition->current_line_information)) {
 				print_compiler_error("Invalid tokens in end of entry definition", transition->current_line_information);
 				transition->is_compiler_error = true;
 			}
-		} else {
+		}
+		/* Throw compiler error */
+		else {
 			print_compiler_error("Entry name must be a valid label", transition->current_line_information);
 			transition->is_compiler_error = true;
 		}
-	} else if (!transition->is_runtimer_error) {
+	}
+	/* Throw runtime error */
+	else if (!transition->is_runtimer_error) {
 		print_compiler_error("Missing entry name", transition->current_line_information);
 		transition->is_compiler_error = true;
 	}

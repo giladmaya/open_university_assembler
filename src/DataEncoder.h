@@ -11,6 +11,8 @@
 #include "Types.h"
 #include <stdio.h>
 
+/* TODO: Comments (all file) */
+
 void first_transition_process_data(transition_data* transition, char* label, char* type, bool is_symbol);
 void process_string(transition_data* transition);
 void process_numbers(transition_data* transition);

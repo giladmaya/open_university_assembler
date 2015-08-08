@@ -553,7 +553,7 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 		transition->is_compiler_error = true;
 		return false;
 	} else {
-		memory_word word;
+		operand_memory_word word;
 
 		word.non_register_address.operand_address = p_symbol->current_symbol.address;
 
@@ -590,7 +590,7 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
  * Output:		Were operands encoded successfully
  */
 bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file) {
-	memory_word word;
+	operand_memory_word word;
 
 	if (source_register != NULL) {
 		word.register_address.source_register_address = atoi(source_register + 1);
@@ -621,7 +621,7 @@ bool encode_registers(transition_data* transition, char* source_register, char* 
  */
 bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) {
 	int number;
-	memory_word word;
+	operand_memory_word word;
 
 	number = atoi(operand + 1);
 
@@ -733,18 +733,17 @@ bool add_operation_to_list(char* name, unsigned int code, int operands) {
 	return added;
 }
 
+/*
+ * Description: Free memory list
+ */
 void free_operation_list() {
 	operation_information_node_ptr p_cleaner_data = p_operation_head;
 
+	/* Clean nodes until no more nodes */
 	while (p_operation_head) {
-
 		p_cleaner_data = p_operation_head;
-
-		/* Move next */
 		p_operation_head = p_operation_head->next;
-
 		free (p_cleaner_data);
 	}
-
 	return;
 }

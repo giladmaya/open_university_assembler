@@ -73,20 +73,16 @@ void update_symbol_address(int ic_length) {
 }
 
 /*
- * Description: Free list memory
+ * Description: Free memory list
  */
 void free_symbol_list() {
 	symbol_node_ptr p_cleaner_data = p_symbol_head;
 
+	/* Clean nodes until no more nodes */
 	while (p_symbol_head) {
-
 		p_cleaner_data = p_symbol_head;
-
-		/* Move next */
 		p_symbol_head = p_symbol_head->next;
-
 		free (p_cleaner_data);
 	}
-
 	return;
 }

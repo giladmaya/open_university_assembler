@@ -8,6 +8,8 @@
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
 
+/* TODO: Comment all file */
+
 #include "Types.h"
 #include "Enums.h"
 #include <stdbool.h>

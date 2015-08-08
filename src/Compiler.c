@@ -1,4 +1,4 @@
-/*
+/* TODO : Write all heades
  ====================================================================================
  Name		: 	Compiler.c
 
@@ -13,7 +13,7 @@
  	 	 	 	 2) ent - memory address of labels
  	 	 	 	 3) ext - memory address of each extern variable used in ob file
 
- Assumptions:
+ Assumptions: 1) We assume that we need to be forgiven to spaces
  ====================================================================================
  */
 
@@ -52,6 +52,7 @@ int main(int argc, char* argv[]) {
 		print_runtime_error("Expected an argument");
 	}
 	
+	/* Initialize operation list */
 	if (!init_operation_list()) {
 		free_operation_list();
 		print_runtime_error("Could not initializes operation definitions");
@@ -75,6 +76,7 @@ int main(int argc, char* argv[]) {
 			print_runtime_error("Could not open source file");
 		}
 
+		/* Check if we had errors, if we didnt, move on to the next run */
 		should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
 
 		if (should_continue) {
@@ -84,6 +86,7 @@ int main(int argc, char* argv[]) {
 			/* TODO: Stop?, Compile next */
 		}
 
+		/* TODO: Decide where to put is cleanup */
 		memory_cleanup();
 		fclose(p_file);
 		free(curr_file);
@@ -91,7 +94,7 @@ int main(int argc, char* argv[]) {
 	
 	free_operation_list();
 
-	/* debug */
+	/* TODO: debug - remove before send */
 	printf("Done compiling");
 
 	exit(0);

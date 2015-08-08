@@ -10,6 +10,8 @@
 
 #include "Types.h"
 
+/* TODO: Comments on all file */
+
 void first_transition_process_entry(transition_data* transition);
 void second_transition_process_entry(transition_data* transition, compiler_output_files* output_files);
 

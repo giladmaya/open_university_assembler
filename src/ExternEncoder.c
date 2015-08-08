@@ -34,26 +34,33 @@ void first_transition_process_extern(transition_data* transition) {
 
 	char* extern_name = get_next_word(transition);
 
-	if (extern_name != NULL) {
+	/* If we have an extern*/
+	if (extern_name) {
 		symbol_node_ptr p_searched_symbol = search_symbol(extern_name);
 
-		if (p_searched_symbol == NULL) {
+		/* Extern does not exists in symbol table */
+		if (!p_searched_symbol) {
+			/* Create new symbol in table or die */
 			p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
-
-			if (p_symbol != NULL) {
+			if (p_symbol) {
 				add_symbol_to_list(p_symbol);
 
+				/* Make sure that the line does not contain left overs */
 				if (!is_end_of_data_in_line(transition->current_line_information)) {
 					print_compiler_error("Invalid tokens after extern definition", transition->current_line_information);
 					transition->is_compiler_error = true;
 					return;
 				}
-			} else {
+			}
+			/* Could not allocat memory, die*/
+			else {
 				transition->is_runtimer_error = true;
 				free(extern_name);
 				return;
 			}
-		} else {
+		}
+		/* Extern is already in table */
+		else {
 			print_compiler_error("Each extern can be defined only once", transition->current_line_information);
 			transition->is_compiler_error = true;
 			return;

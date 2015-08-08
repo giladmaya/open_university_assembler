@@ -10,7 +10,7 @@ sub1 $$, r4
 mov2 r1,r3
 ; comment
 ; comment
-; comment
+																			;comment comment
 ; comment
 ; comment
 
