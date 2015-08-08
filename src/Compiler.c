@@ -36,7 +36,6 @@
 void memory_cleanup() {
 	free_data_node_list();
 	free_symbol_list();
-	free_operation_list();
 	return;
 }
 
@@ -58,9 +57,14 @@ int main(int argc, char* argv[]) {
 	/* Check if no arg's provided */
 	if (argc == 1) {
 		print_runtime_error("Expected an argument");
-
 	}
 	
+	if (!init_operation_list()) {
+		free_operation_list();
+		print_runtime_error("Could not initializes operation definitions");
+		exit(0);
+	}
+
 	/* Run the Compiler for each file given as arg */
 	for (i=1; i < argc; i++) {
 		unsigned int ic;
@@ -92,6 +96,8 @@ int main(int argc, char* argv[]) {
 		free(curr_file);
 	}
 	
+	free_operation_list();
+
 	/* debug */
 	printf("Done compiling");
 

@@ -46,7 +46,13 @@ void first_transition_process_operation(transition_data* transition, char* label
 	if (is_symbol) {
 			symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 
-			add_symbol_to_list(p_symbol);
+			if (p_symbol != NULL) {
+				add_symbol_to_list(p_symbol);
+			} else {
+				transition->is_runtimer_error = true;
+				free(label);
+				return;
+			}
 	}
 
 	/* Gets all data about the current operation */
@@ -584,10 +590,6 @@ void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_fi
 machine_operation_definition* search_machine_operation_in_list(char* operation) {
 	operation_information_node_ptr p_current;
 
-	if (p_operation_head == NULL) {
-		init_operation_list();
-	}
-
 	p_current = p_operation_head;
 
 	while (p_current != NULL) {
@@ -601,36 +603,42 @@ machine_operation_definition* search_machine_operation_in_list(char* operation) 
 	return NULL;
 }
 
-/* TODO : comments */
-void init_operation_list() {
+/*
+ * Description: Initializes the operation list used for encoding
+ * Output:		Did the initialization end
+ */
+bool init_operation_list() {
+	bool initialized = true;
+
 	int op_code = 0;
 
-	add_operation_to_list(MOV_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(CMP_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(ADD_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(SUB_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(NOT_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(CLR_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(LEA_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(INC_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(DEC_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(JMP_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(BNE_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(RED_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(PRN_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(JSR_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(RTS_OPERATION, op_code++, NO_OPERANDS);
-	add_operation_to_list(STOP_OPERATION, op_code++, NO_OPERANDS);
+	initialized &= add_operation_to_list(MOV_OPERATION, op_code++, TWO_OPERANDS);
+	initialized &= add_operation_to_list(CMP_OPERATION, op_code++, TWO_OPERANDS);
+	initialized &= add_operation_to_list(ADD_OPERATION, op_code++, TWO_OPERANDS);
+	initialized &= add_operation_to_list(SUB_OPERATION, op_code++, TWO_OPERANDS);
+	initialized &= add_operation_to_list(NOT_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(CLR_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(LEA_OPERATION, op_code++, TWO_OPERANDS);
+	initialized &= add_operation_to_list(INC_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(DEC_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(JMP_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(BNE_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(RED_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(PRN_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(JSR_OPERATION, op_code++, ONE_OPERAND);
+	initialized &= add_operation_to_list(RTS_OPERATION, op_code++, NO_OPERANDS);
+	initialized &= add_operation_to_list(STOP_OPERATION, op_code++, NO_OPERANDS);
+
+	return initialized;
 }
 
-void add_operation_to_list(char* name, unsigned int code, int operands) {
-	operation_information_node_ptr p_new = (operation_information_node_ptr)malloc(sizeof(operation_information_node));
+bool add_operation_to_list(char* name, unsigned int code, int operands) {
+	bool added = false;
 
-	if (p_new == NULL) {
-		/* Todo: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
-	} else {
+	operation_information_node_ptr p_new =
+			(operation_information_node_ptr)allocate_memory(sizeof(operation_information_node));
+
+	if (p_new != NULL) {
 		p_new->data.name = name;
 		p_new->data.code = code;
 		p_new->data.operands_number = operands;
@@ -643,7 +651,11 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 			p_new->next = p_operation_head;
 			p_operation_head = p_new;
 		}
+
+		added = true;
 	}
+
+	return added;
 }
 
 void free_operation_list() {

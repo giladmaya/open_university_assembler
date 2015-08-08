@@ -50,7 +50,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 	transition->DC = 0;
 
 	/* Runs until end of file */
-	while (!feof(assembler_input_file)) {
+	while (!feof(assembler_input_file) && !transition->is_runtimer_error) {
 		char line[MAX_LINE_LENGTH];
 
 		/* Step 2 */
@@ -65,19 +65,21 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 				/* Process the line */
 				first_transition_process_line(transition);
 
-				success &= !(info->is_error);
+				success &= !(transition->is_compiler_error);
 
 				free(info);
 			}
 		}
 	}
 
-	/* Changes the data address according to the code length */
-	update_data_address(transition->IC);
-	update_symbol_address(transition->IC);
+	if (!transition->is_compiler_error && !transition->is_runtimer_error) {
+		/* Changes the data address according to the code length */
+		update_data_address(transition->IC);
+		update_symbol_address(transition->IC);
 
-	*IC = transition->IC;
-	*DC = transition->DC;
+		*IC = transition->IC;
+		*DC = transition->DC;
+	}
 
 	if (transition->prev_operation_operand != NULL) {
 		free(transition->prev_operation_operand);
@@ -85,7 +87,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 
 	free(transition);
 
-	return success;
+	return success & !transition->is_runtimer_error;
 }
 
 /*

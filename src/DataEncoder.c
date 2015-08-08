@@ -105,12 +105,21 @@ void update_data_address(int ic_length) {
  * 				4. Type of data (.string, .data)
  * 				5. Does a symbol exists
  */
-void first_transition_process_data(transition_data* transition, char* label, char* type, bool is_symbol) {
+void first_transition_process_data(transition_data* transition, char* label, char* data_type, bool is_symbol) {
+
 	/* Step 6 */
 	if (is_symbol) {
 		symbol_node_ptr p_symbol = create_symbol(label, transition->DC, false, true);
 
-		add_symbol_to_list(p_symbol);
+		if (p_symbol != NULL)
+			add_symbol_to_list(p_symbol);
+		else {
+			transition->is_runtimer_error = true;
+
+			free(label);
+
+			return;
+		}
 	}
 
 	skip_all_spaces(transition->current_line_information);
@@ -124,7 +133,7 @@ void first_transition_process_data(transition_data* transition, char* label, cha
 		transition->is_compiler_error = true;
 	}
 	/* This is a string initialization */
-	else if (strcmp(type, STRING_OPERATION) == 0) {
+	else if (strcmp(data_type, STRING_OPERATION) == 0) {
 		process_string(transition);
 	}
 	/* This is a numeric data */

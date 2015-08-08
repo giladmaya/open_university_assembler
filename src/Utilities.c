@@ -279,8 +279,6 @@ void* allocate_memory(int bytes) {
 
 	if (result == NULL) {
 		print_runtime_error("Could not allocate memory. Exit program");
-		/*IDAN : why do we need exit here after runtime error? */
-		exit(0);
 	}
 
 	return result;

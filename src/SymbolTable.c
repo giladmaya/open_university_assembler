@@ -33,13 +33,9 @@ void add_symbol_to_list(symbol_node_ptr p_new_symbol) {
 }
 
 symbol_node_ptr create_symbol(char* name, unsigned int address, bool is_extern, bool is_instruction) {
-	symbol_node_ptr p_node = (symbol_node_ptr)malloc(sizeof(symbol_node));
+	symbol_node_ptr p_node = (symbol_node_ptr)allocate_memory(sizeof(symbol_node));
 
-	if (p_node == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
-	} else {
+	if (p_node != NULL) {
 		p_node->current_symbol.name = name;
 		p_node->current_symbol.is_external = is_extern;
 		p_node->current_symbol.is_instruction = is_instruction;

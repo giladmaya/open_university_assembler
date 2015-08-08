@@ -37,7 +37,11 @@ void first_transition_process_extern(transition_data* transition) {
 	if (extern_name != NULL) {
 		p_symbol = create_symbol(extern_name, NO_ADDRESS, true, true);
 
-		add_symbol_to_list(p_symbol);
+		if (p_symbol != NULL) {
+			add_symbol_to_list(p_symbol);
+		} else {
+			transition->is_runtimer_error = true;
+		}
 	}
 }
 

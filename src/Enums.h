@@ -21,16 +21,6 @@ typedef enum
 } ADDRESS_METHOD;
 
 /*
- * Error codes
- */
-typedef enum
-{
-	NONE,
-	COMPILER,
-	BAD_ALLOCATION
-} ERROR_CODES;
-
-/*
  * ERA options
  */
 typedef enum {
@@ -47,5 +37,10 @@ typedef enum {
 	ONE_OPERAND = 1,
 	TWO_OPERANDS = 2
 } OPERANDS_COUNT;
+
+typedef enum {
+	NO_ERROR,
+	RUNTIME_ERROR
+} ERROR_TYPES;
 
 #endif /* ENUMS_H_ */

@@ -37,8 +37,8 @@ bool encode_registers(char* source_register, char* target_register, unsigned int
 bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file);
 
 machine_operation_definition* search_machine_operation_in_list(char* operation);
-void init_operation_list();
-void add_operation_to_list(char* name, unsigned int code, int operands);
+bool init_operation_list();
+bool add_operation_to_list(char* name, unsigned int code, int operands);
 
 void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file);
 
