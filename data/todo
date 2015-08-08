@@ -5,3 +5,4 @@ TODO: Known bugs:
 
 QA :
 1. make sure that entry and extern points to a label
+2. make sure that var's exists

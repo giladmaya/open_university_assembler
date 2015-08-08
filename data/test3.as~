@@ -3,7 +3,7 @@
 .entry LENGTH
 .extern L3
 mov1 #7,r1
-mov1 r2,r33
+mov16 r2,r33
 MAIN: mov2 D, W
 add1 r2,r2
 mov1 $$,r4
