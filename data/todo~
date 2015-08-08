@@ -4,4 +4,5 @@ TODO: Known bugs:
 3. replace free list to macros(pointer type, head pointer
 
 QA :
+1. make sure that entry and extern points to a label
 3. alert on multi entry (Work on extern but not entry)
