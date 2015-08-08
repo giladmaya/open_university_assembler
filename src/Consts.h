@@ -16,8 +16,9 @@
 /* Base used in output files */
 #define TARGET_BASE 4
 
-/* Output files seperator */
+/* Output files separator */
 #define COLUMN_SEPARATOR '\t'
+#define HEADER_SEPARATOR ' '
 
 /* Length of words in output files */
 #define TARGET_MEMORY_ADDRESS_WORD_LENGTH 4

@@ -194,7 +194,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file) {
 	char* number = convert_base10_to_target_base(ic, TARGET_BASE, 0);
 	fputs(number, output_file);
-	fputc(' ', output_file);
+	fputc('HEADER_SEPARATOR', output_file);
 	free(number);
 
 	number = convert_base10_to_target_base(dc, TARGET_BASE, 0);

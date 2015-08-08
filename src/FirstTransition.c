@@ -39,7 +39,8 @@ bool can_use_copy_previous = false;
  * Description: Executes the first transition of the assembly compiler
  * Input:		1. Input file
  * 				2. File name
- * Output:		Was transition successfull
+ * Output:		Was transition successful
+ * 				TODO : ADD MORE COMMENTS IN FUNC
  */
 bool first_transition_execute(FILE* assembler_input_file, char* file_name_without_extension, unsigned int* IC, unsigned int* DC) {
 	transition_data* transition = create_transition_data();
@@ -106,6 +107,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
  * Input:		1. Line information
  * 				2. Current IC address
  * 				3. Current DC value
+ * 				TODO : ADD MORE COMMENTS IN FUNC
  */
 void first_transition_process_line(transition_data* transition) {
 	char* label = NULL;
