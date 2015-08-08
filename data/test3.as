@@ -2,9 +2,9 @@
 .entry LENGTH
 .entry LENGTH
 .extern L3
-mov1 #7,r1
-mov1 r2,r33
-MAIN: mov2 D, W
+mov2 #7,r1
+mov1 r2,r1
+MAIN: mov2 #-1, r2
 add1 r2,r2
 mov1 $$,r4
 LOOP: jmp1 L3

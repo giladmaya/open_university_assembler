@@ -1,8 +1,0 @@
-TODO: Known bugs:
-1. Release memory when ending in runtime error
-2. General memory handle
-3. replace free list to macros(pointer type, head pointer
-
-QA :
-1. make sure that entry and extern points to a label
-7. make sure that entry and extern only take one param
