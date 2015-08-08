@@ -420,6 +420,7 @@ bool are_operand_methods_allowed_in_operation(decoded_operation* current_operati
 	}
 }
 
+/* TODO : comments */
 bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
 	encoded_operation coded_op;
 	int i;
@@ -451,6 +452,7 @@ bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, 
 	return true;
 }
 
+/* TODO : comments */
 bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info) {
 	bool is_valid;
 
@@ -487,6 +489,7 @@ bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic
 	return is_valid;
 }
 
+/* TODO : comments */
 bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_output_files* output_files) {
 	symbol_node_ptr p_symbol = search_symbol(operand);
 
@@ -515,6 +518,7 @@ bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_o
 	}
 }
 
+/* TODO : comments */
 bool encode_registers(char* source_register, char* target_register, unsigned int ic, line_info* p_info, FILE* p_file) {
 	memory_word word;
 
@@ -538,6 +542,7 @@ bool encode_registers(char* source_register, char* target_register, unsigned int
 	return true;
 }
 
+/* TODO : comments */
 bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file) {
 	int number;
 	memory_word word;
@@ -553,6 +558,7 @@ bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p
 	return true;
 }
 
+/* TODO : comments */
 void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_file) {
 	char* base4_value;
 
@@ -595,6 +601,7 @@ machine_operation_definition* search_machine_operation_in_list(char* operation) 
 	return NULL;
 }
 
+/* TODO : comments */
 void init_operation_list() {
 	int op_code = 0;
 
@@ -629,6 +636,7 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 		p_new->data.operands_number = operands;
 		p_new->next = NULL;
 
+		/* first node input */
 		if (p_operation_head == NULL) {
 			p_operation_head = p_new;
 		} else {
@@ -636,4 +644,20 @@ void add_operation_to_list(char* name, unsigned int code, int operands) {
 			p_operation_head = p_new;
 		}
 	}
+}
+
+void free_operation_list() {
+	operation_information_node_ptr p_cleaner_data = p_operation_head;
+
+	while (p_operation_head) {
+
+		p_cleaner_data = p_operation_head;
+
+		/* Move next */
+		p_operation_head = p_operation_head->next;
+
+		free (p_cleaner_data);
+	}
+
+	return;
 }

@@ -42,4 +42,6 @@ void add_operation_to_list(char* name, unsigned int code, int operands);
 
 void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file);
 
+void free_operation_list();
+
 #endif /* OPERATIONENCODER_H_ */

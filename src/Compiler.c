@@ -28,6 +28,7 @@
 /* TODO : make a decision were to put code : */
 #include "DataEncoder.h"
 #include "SymbolTable.h"
+#include "OperationEncoder.h"
 
 /*
  * Description: Cleaning up memory between files, global call for all cleanups
@@ -35,16 +36,18 @@
 void memory_cleanup() {
 	free_data_node_list();
 	free_symbol_list();
+	free_operation_list();
 	return;
 }
 
 /* end of crap code to move */
 
 /*
- * Known bugs:
+ * TODO: Known bugs:
  * 1. Release memory when ending in runtime error
  * 2. General memory handle
  * 3. QA
+ * 4. replace free list to macros(pointer type, head pointer
  */
 
 int main(int argc, char* argv[]) {
