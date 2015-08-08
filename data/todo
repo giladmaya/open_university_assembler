@@ -1,0 +1,9 @@
+TODO: Known bugs:
+1. Release memory when ending in runtime error
+2. General memory handle
+3. replace free list to macros(pointer type, head pointer
+
+QA :
+1. make sure that entry and extern points to a label
+2. make sure ob file will NOT be created on compiler error
+3. make sure the next arg file will continue to run

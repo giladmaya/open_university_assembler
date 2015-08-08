@@ -41,13 +41,6 @@ void memory_cleanup() {
 
 /* end of crap code to move */
 
-/*
- * TODO: Known bugs:
- * 1. Release memory when ending in runtime error
- * 2. General memory handle
- * 3. QA
- * 4. replace free list to macros(pointer type, head pointer
- */
 
 int main(int argc, char* argv[]) {
 	int i;
