@@ -54,12 +54,14 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 	while (!feof(assembler_input_file) && !transition->is_runtimer_error) {
 		char line[MAX_LINE_LENGTH];
 
+		line_number++;
+
 		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, assembler_input_file)) {
 
 			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
-				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
+				line_info* info = create_line_info(file_name_without_extension, line_number, line);
 
 				if (info != NULL) {
 					transition->current_line_information = info;

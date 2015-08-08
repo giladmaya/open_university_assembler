@@ -42,12 +42,14 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 	while (!feof(pFile) && !transition->is_runtimer_error) {
 		char line[MAX_LINE_LENGTH];
 
+		line_number++;
+
 		/* Step 2 */
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
 			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
 				transition->current_line_information =
-						create_line_info(file_name_without_extension, ++line_number, line);
+						create_line_info(file_name_without_extension, line_number, line);
 
 				if (transition->current_line_information != NULL) {
 					second_transition_process_line(transition, &output_files);
