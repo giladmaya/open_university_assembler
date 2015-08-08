@@ -137,7 +137,7 @@ char* get_next_operand(transition_data* transition) {
 bool is_register(char* operand, int length) {
 	int digit;
 
-	if ((length != 2) || (toupper(operand[0]) != REGISTER_FIRST_TOKEN) || (!isdigit(operand[1]))) {
+	if ((length != 2) || (operand[0] != REGISTER_FIRST_TOKEN) || (!isdigit(operand[1]))) {
 		return false;
 	}
 
