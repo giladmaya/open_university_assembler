@@ -532,6 +532,8 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 		if (p_symbol->current_symbol.is_external) {
 			word.non_register_address.era = EXTERNAL;
 
+			create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
+
 			write_extern_to_output_file(operand, transition->IC + ADDRESS_START, output_files->extern_file);
 		} else {
 
