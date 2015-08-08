@@ -49,9 +49,13 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 				transition->current_line_information =
 						create_line_info(file_name_without_extension, ++line_number, line);
 
-				second_transition_process_line(transition, &output_files);
+				if (transition->current_line_information != NULL) {
+					second_transition_process_line(transition, &output_files);
 
-				free(transition->current_line_information);
+					free(transition->current_line_information);
+				} else {
+					transition->is_runtimer_error = true;
+				}
 			}
 		}
 	}
@@ -143,12 +147,15 @@ void second_transition_process_line(transition_data* transition, compiler_output
 
 	index = transition->current_line_information->current_index;
 
-	type = get_next_word(transition->current_line_information);
+	type = get_next_word(transition);
 
 	/*
 	 * Step 4
 	 */
-	if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
+	if (type == NULL) {
+		print_compiler_error("Invalid line", transition->current_line_information);
+		transition->is_compiler_error = true;
+	} else if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
 		/* Skip */
 	}
 	/*

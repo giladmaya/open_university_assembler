@@ -32,7 +32,7 @@ void create_extern_output_file_if_needed(compiler_output_files* output_files, ch
 void first_transition_process_extern(transition_data* transition) {
 	symbol_node_ptr p_symbol = NULL;
 
-	char* extern_name = get_next_word(transition->current_line_information);
+	char* extern_name = get_next_word(transition);
 
 	if (extern_name != NULL) {
 		symbol_node_ptr p_searched_symbol = search_symbol(extern_name);

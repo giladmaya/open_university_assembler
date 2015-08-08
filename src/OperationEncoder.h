@@ -29,12 +29,12 @@ int get_operation_size(transition_data* transition, decoded_operation* current_o
 
 void update_transition_with_last_operation(transition_data* transition, decoded_operation* decoded_operation);
 
-bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files);
-bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info);
+bool encode_operation(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files);
+bool encode_memory_word(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files);
 
-bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_output_files* output_files);
-bool encode_registers(char* source_register, char* target_register, unsigned int ic, line_info* p_info, FILE* p_file);
-bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file);
+bool encode_direct(transition_data* transition, char* operand, compiler_output_files* output_files);
+bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file);
+bool encode_immediate(transition_data* transition, char* operand, FILE* p_file);
 
 machine_operation_definition* search_machine_operation_in_list(char* operation);
 bool init_operation_list();

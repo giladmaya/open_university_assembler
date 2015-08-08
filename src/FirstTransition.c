@@ -61,14 +61,18 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 			if (!is_empty_or_comment(line)) {
 				line_info* info = create_line_info(file_name_without_extension, ++line_number, line);
 
-				transition->current_line_information = info;
+				if (info != NULL) {
+					transition->current_line_information = info;
 
-				/* Process the line */
-				first_transition_process_line(transition);
+					/* Process the line */
+					first_transition_process_line(transition);
 
-				success &= !(transition->is_compiler_error);
+					success &= !(transition->is_compiler_error);
 
-				free(info);
+					free(info);
+				} else {
+					transition->is_runtimer_error = true;
+				}
 			}
 		}
 	}
@@ -125,12 +129,15 @@ void first_transition_process_line(transition_data* transition) {
 		}
 	}
 
-	line_type = get_next_word(transition->current_line_information);
+	line_type = get_next_word(transition);
 
 	/*
 	 * Step 5
 	 */
-	if ((strcmp(line_type, DATA_OPERATION) == 0) || (strcmp(line_type, STRING_OPERATION) == 0)) {
+	if (line_type == NULL) {
+		print_compiler_error("Invalid line", transition->current_line_information);
+		transition->is_compiler_error = true;
+	} else	if ((strcmp(line_type, DATA_OPERATION) == 0) || (strcmp(line_type, STRING_OPERATION) == 0)) {
 		first_transition_process_data(transition, label, line_type, is_symbol);
 	}
 	/*

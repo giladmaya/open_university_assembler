@@ -33,17 +33,17 @@ void skip_all_spaces(line_info* info) {
 	info->current_index = index;
 }
 
-char* get_next_word(line_info* info)
+char* get_next_word(transition_data* transition)
 {
 	char* word;
 	int i, word_end_index, word_start_index, word_length;
 
-	skip_all_spaces(info);
+	skip_all_spaces(transition->current_line_information);
 
-	word_end_index  = word_start_index = i = info->current_index;
+	word_end_index  = word_start_index = i = transition->current_line_information->current_index;
 
-	for (;i < info->line_length; i++) {
-		if (!isspace(info->line_str[i])) {
+	for (;i < transition->current_line_information->line_length; i++) {
+		if (!isspace(transition->current_line_information->line_str[i])) {
 			word_end_index = i;
 		} else {
 			break;
@@ -52,30 +52,24 @@ char* get_next_word(line_info* info)
 
 	word_length = word_end_index - word_start_index + 1;
 
-	word = (char*)malloc(sizeof(char) * (word_length + 1));
+	word = allocate_string(word_length);
 
 	if (word == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
+		transition->is_runtimer_error = true;
 	} else {
-		strncpy(word, info->line_str + word_start_index, word_length);
+		strncpy(word, transition->current_line_information->line_str + word_start_index, word_length);
 		(word)[word_length] = END_OF_STRING;
 
-		info->current_index = word_end_index + 1;
+		transition->current_line_information->current_index = word_end_index + 1;
 	}
 
 	return word;
 }
 
 line_info* create_line_info(char* file_name, int line_number, char* line_str) {
-	line_info* info = (line_info*)malloc(sizeof(line_info));
+	line_info* info = (line_info*)allocate_memory(sizeof(line_info));
 
-	if (info == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
-	} else {
+	if (info != NULL) {
 		info->current_index = 0;
 		info->file_name = file_name;
 		info->line_number = line_number;
@@ -84,47 +78,6 @@ line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 	}
 
 	return info;
-}
-
-void get_operation(char* word, char** operation, int* counter) {
-	int i = 0;
-	int word_length = strlen(word);
-
-	while ((i < word_length) && isalpha(word[i])) {
-		i++;
-	}
-
-	*operation = (char*)malloc(sizeof(char) * (i + 1));
-
-	if (*operation == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
-	} else {
-		strncpy(*operation, word, i);
-		(*operation)[i] = '\0';
-
-		*counter = atoi(word + i);
-	}
-}
-
-
-char* get_label(line_info* info) {
-	char* label = get_next_word(info);
-
-	/* Return a label only if its valid */
-	if (is_valid_label(label)) {
-		/* Remove ':' token from the string */
-		int length = strlen(label);
-		label[length - 1] = END_OF_STRING;
-
-		return label;
-	} else {
-		/* Reset line pointer */
-		info->current_index = 0;
-		return NULL;
-	}
-
 }
 
 /* IDAN : Dont we need skip all spaces at the start!? */
@@ -146,16 +99,17 @@ bool is_empty_or_comment(char* line) {
 	}
 }
 
-char* get_next_operand(line_info* info) {
+char* get_next_operand(transition_data* transition) {
 	char* operand = NULL;
 	int i, operand_end_index, operand_start_index, operand_length;
 
-	skip_all_spaces(info);
+	skip_all_spaces(transition->current_line_information);
 
-	operand_end_index  = operand_start_index = i = info->current_index;
+	operand_end_index  = operand_start_index = i = transition->current_line_information->current_index;
 
-	for (;i < info->line_length; i++) {
-		if (!isspace(info->line_str[i]) && (info->line_str[i] != OPERAND_SEPERATOR)) {
+	for (;i < transition->current_line_information->line_length; i++) {
+		if (!isspace(transition->current_line_information->line_str[i]) &&
+				(transition->current_line_information->line_str[i] != OPERAND_SEPERATOR)) {
 			operand_end_index = i;
 		}
 		else
@@ -166,38 +120,18 @@ char* get_next_operand(line_info* info) {
 
 	operand_length = operand_end_index - operand_start_index + 1;
 
-	operand = (char*)malloc(sizeof(char) * (operand_length + 1));
+	operand = allocate_string(operand_length);
 
 	if (operand == NULL) {
-		/* TODO: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
+		transition->is_runtimer_error = true;
 	} else {
-		strncpy(operand, info->line_str + operand_start_index, operand_length);
+		strncpy(operand, transition->current_line_information->line_str + operand_start_index, operand_length);
 		operand[operand_length] = '\0';
 
-		info->current_index = operand_end_index + 1;
+		transition->current_line_information->current_index = operand_end_index + 1;
 	}
 
 	return operand;
-}
-
-ADDRESS_METHOD get_operand_method(char* operand) {
-	int operand_length = strlen(operand);
-
-	if (operand_length > 0) {
-		if (operand[0] == IMMEDIATE_TOKEN) {
-			return IMMEDIATE;
-		} else if (strcmp(operand, COPY_PERVIOUS_STR) == 0) {
-			return COPY_PREVIOUS;
-		} else if (is_register(operand, operand_length)) {
-			return DIRECT_REGISTER;
-		} else {
-			return DIRECT;
-		}
-	}
-
-	return DIRECT;
 }
 
 bool is_register(char* operand, int length) {

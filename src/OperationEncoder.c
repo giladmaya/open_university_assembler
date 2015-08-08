@@ -30,7 +30,7 @@ void second_transition_process_operation(transition_data* transition, compiler_o
 	decoded_operation* p_decoded_operation = get_decoded_operation(transition);
 
 	/* Encode the operation */
-	encode_operation(p_decoded_operation, &(transition->IC), p_output_files);
+	encode_operation(transition, p_decoded_operation, p_output_files);
 
 	update_transition_with_last_operation(transition, p_decoded_operation);
 }
@@ -224,11 +224,15 @@ bool get_operands(transition_data* transition, int operands_count, char** source
 		}
 		case ONE_OPERAND: {
 			*source_operand = NULL;
-			*target_operand = get_next_operand(transition->current_line_information);
+			*target_operand = get_next_operand(transition);
 			break;
 		}
 		case TWO_OPERANDS: {
-			*source_operand = get_next_operand(transition->current_line_information);
+			*source_operand = get_next_operand(transition);
+
+			if (transition->is_runtimer_error) {
+				return false;
+			}
 
 			skip_all_spaces(transition->current_line_information);
 
@@ -238,15 +242,18 @@ bool get_operands(transition_data* transition, int operands_count, char** source
 				is_valid = false;
 			} else {
 				transition->current_line_information->current_index++;
-				*target_operand = get_next_operand(transition->current_line_information);
+				*target_operand = get_next_operand(transition);
 			}
 
 			break;
 		}
 	}
 
+	if (transition->is_runtimer_error) {
+		is_valid = false;
+	}
 	/* Searches for tokens after operation */
-	if (is_valid && !is_end_of_data_in_line(transition->current_line_information)) {
+	else if (is_valid && !is_end_of_data_in_line(transition->current_line_information)) {
 		print_compiler_error("Found unexpected token on end of operation definition", transition->current_line_information);
 		transition->is_compiler_error = true;
 		is_valid = false;
@@ -440,7 +447,7 @@ bool are_operand_methods_allowed_in_operation(decoded_operation* current_operati
 }
 
 /* TODO : comments */
-bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files) {
+bool encode_operation(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
 	encoded_operation coded_op;
 	int i;
 
@@ -454,12 +461,12 @@ bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, 
 	coded_op.bits.rest = 0;
 
 	for (i = 1; i <= p_decoded_operation->times; i++) {
-		print_encoding_to_file(*ic + ADDRESS_START, coded_op.value, output_files->ob_file);
+		print_encoding_to_file(transition->IC + ADDRESS_START, coded_op.value, output_files->ob_file);
 
-		(*ic)++;
+		transition->IC++;
 
 		if (p_decoded_operation->operation->operands_number > 0) {
-			bool is_valid = encode_memory_word(p_decoded_operation, ic, output_files, NULL);
+			bool is_valid = encode_memory_word(transition, p_decoded_operation, output_files);
 
 			if (!is_valid) {
 				return is_valid;
@@ -472,48 +479,50 @@ bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, 
 }
 
 /* TODO : comments */
-bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info) {
+bool encode_memory_word(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
 	bool is_valid;
 
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
 			(p_decoded_operation->target_operand_address_method == DIRECT_REGISTER)) {
 		is_valid = encode_registers(
-				p_decoded_operation->source_operand, p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
-		(*ic)++;
+				transition, p_decoded_operation->source_operand,
+				p_decoded_operation->target_operand, output_files->ob_file);
+		transition->IC++;
 	} else {
 		if (p_decoded_operation->operation->operands_number == 2) {
 
 			if (p_decoded_operation->source_operand_address_method == DIRECT) {
-				is_valid = encode_direct(p_decoded_operation->source_operand, *ic, p_info, output_files);
+				is_valid = encode_direct(transition, p_decoded_operation->source_operand, output_files);
 			} else if (p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) {
-				is_valid = encode_registers(p_decoded_operation->source_operand, NULL, *ic, p_info, output_files->ob_file);
+				is_valid = encode_registers(transition, p_decoded_operation->source_operand, NULL, output_files->ob_file);
 			} else if (p_decoded_operation->source_operand_address_method == IMMEDIATE) {
-				is_valid = encode_immediate(p_decoded_operation->source_operand, *ic, p_info, output_files->ob_file);
+				is_valid = encode_immediate(transition, p_decoded_operation->source_operand, output_files->ob_file);
 			}
 
-			(*ic)++;
+			transition->IC++;
 		}
 
 		if (p_decoded_operation->target_operand_address_method == DIRECT) {
-			is_valid = encode_direct(p_decoded_operation->target_operand, *ic, p_info, output_files);
+			is_valid = encode_direct(transition, p_decoded_operation->target_operand, output_files);
 		} else if (p_decoded_operation->target_operand_address_method == DIRECT_REGISTER) {
-			is_valid = encode_registers(NULL, p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
+			is_valid = encode_registers(transition, NULL, p_decoded_operation->target_operand, output_files->ob_file);
 		} else if (p_decoded_operation->target_operand_address_method == IMMEDIATE) {
-			is_valid = encode_immediate(p_decoded_operation->target_operand, *ic, p_info, output_files->ob_file);
+			is_valid = encode_immediate(transition, p_decoded_operation->target_operand, output_files->ob_file);
 		}
 
-		(*ic)++;
+		transition->IC++;
 	}
 
 	return is_valid;
 }
 
 /* TODO : comments */
-bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_output_files* output_files) {
+bool encode_direct(transition_data* transition, char* operand, compiler_output_files* output_files) {
 	symbol_node_ptr p_symbol = search_symbol(operand);
 
 	if (p_symbol == NULL) {
-		print_compiler_error("Using unknown operand", p_info);
+		print_compiler_error("Using unknown operand", transition->current_line_information);
+		transition->is_compiler_error = true;
 		return false;
 	} else {
 		memory_word word;
@@ -523,7 +532,7 @@ bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_o
 		if (p_symbol->current_symbol.is_external) {
 			word.non_register_address.era = EXTERNAL;
 
-			write_extern_to_output_file(operand, ic + ADDRESS_START, output_files->extern_file);
+			write_extern_to_output_file(operand, transition->IC + ADDRESS_START, output_files->extern_file);
 		} else {
 
 			word.non_register_address.era = RELOCATABLE;
@@ -531,14 +540,14 @@ bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_o
 
 		word.non_register_address.rest = 0;
 
-		print_encoding_to_file(ic + ADDRESS_START, word.value, output_files->ob_file);
+		print_encoding_to_file(transition->IC + ADDRESS_START, word.value, output_files->ob_file);
 
 		return true;
 	}
 }
 
 /* TODO : comments */
-bool encode_registers(char* source_register, char* target_register, unsigned int ic, line_info* p_info, FILE* p_file) {
+bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file) {
 	memory_word word;
 
 	if (source_register != NULL) {
@@ -556,13 +565,13 @@ bool encode_registers(char* source_register, char* target_register, unsigned int
 	word.register_address.era = ABSOLUTE;
 	word.register_address.rest = 0;
 
-	print_encoding_to_file(ic + ADDRESS_START, word.value, p_file);
+	print_encoding_to_file(transition->IC + ADDRESS_START, word.value, p_file);
 
 	return true;
 }
 
 /* TODO : comments */
-bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file) {
+bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) {
 	int number;
 	memory_word word;
 
@@ -572,7 +581,7 @@ bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p
 	word.non_register_address.era = ABSOLUTE;
 	word.non_register_address.rest = 0;
 
-	print_encoding_to_file(ic + ADDRESS_START, word.value, p_file);
+	print_encoding_to_file(transition->IC + ADDRESS_START, word.value, p_file);
 
 	return true;
 }

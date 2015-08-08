@@ -19,7 +19,7 @@
  * 				2. Output files
  */
 void second_transition_process_entry(transition_data* transition, compiler_output_files* output_files) {
-	char* entry_name = get_next_word(transition->current_line_information);
+	char* entry_name = get_next_word(transition);
 
 	/* Search for the entry inside the symbol table */
 	symbol_node_ptr p_symbol = search_symbol(entry_name);
@@ -36,7 +36,7 @@ void second_transition_process_entry(transition_data* transition, compiler_outpu
 }
 
 void first_transition_process_entry(transition_data* transition) {
-	char* entry_name = get_next_operand(transition->current_line_information);
+	char* entry_name = get_next_word(transition);
 
 	if (entry_name != NULL) {
 		if (is_valid_label(entry_name)) {
@@ -48,7 +48,7 @@ void first_transition_process_entry(transition_data* transition) {
 			print_compiler_error("Entry name must be a valid label", transition->current_line_information);
 			transition->is_compiler_error = true;
 		}
-	} else {
+	} else if (!transition->is_runtimer_error) {
 		print_compiler_error("Missing entry name", transition->current_line_information);
 		transition->is_compiler_error = true;
 	}

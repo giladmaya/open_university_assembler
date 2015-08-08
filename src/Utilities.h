@@ -20,17 +20,14 @@ void* allocate_memory(int bytes);
 
 void skip_all_spaces(line_info* info);
 
-char* get_next_word(line_info* info);
-char* get_label(line_info* info);
+char* get_next_word(transition_data* transition);
 void skip_label(line_info* info);
 
 line_info* create_line_info(char* file_name, int line_number, char* line_str);
 bool is_empty_or_comment(char* line);
 bool is_end_of_data_in_line(line_info* info);
 
-void get_operation(char* word, char** operation, int* counter);
-char* get_next_operand(line_info* info);
-ADDRESS_METHOD get_operand_method(char* operand);
+char* get_next_operand(transition_data* transition);
 bool is_register(char* operand, int length);
 
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base, int minimal_returned_length);
