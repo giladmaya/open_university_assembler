@@ -9,7 +9,7 @@ add1 r2,r2
 mov1 $$,r4
 LOOP: jmp1 L3
 prn1 #-5
-sub1 $$, r4
+sub111 $$, r4
 inc1 r0
 mov2 $$,r3
 bne1 L3
