@@ -13,7 +13,8 @@
  	 	 	 	 2) ent - memory address of labels
  	 	 	 	 3) ext - memory address of each extern variable used in ob file
 
- Assumptions: 1) We assume that we need to be forgiven to spaces
+ Assumptions: 1) We assume that we need to be forgiven to spaces - was required by Yakir
+ 	 	 	 	 in the forum
  ====================================================================================
  */
 
