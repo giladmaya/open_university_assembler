@@ -12,13 +12,22 @@
 #include <stdbool.h>
 #include <stdio.h>
 
-decoded_operation* get_operation_data(transition_data* transition);
+void first_transition_process_operation(transition_data* transition, char* label, bool is_symbol);
 
+void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files);
+
+decoded_operation* get_decoded_operation(transition_data* transition);
 char* get_operation_name(line_info* p_info);
-int get_operation_times_counter(line_info* p_info);
-bool are_operands_valid(char* operation_name, ADDRESS_METHOD first_operand, ADDRESS_METHOD second_operand);
-ADDRESS_METHOD get_address_method(line_info* p_info, char* operand);
-bool replace_operand_method_if_needed(ADDRESS_METHOD* current_address_method, char** current_operand, transition_data* transition);
+bool get_operation_times_counter(transition_data* transition, int* times);
+bool get_operands(transition_data* transition, int operands_count, char** source_operand, char** target_operand);
+ADDRESS_METHOD get_address_method(transition_data* transition, char* operand);
+bool replace_operand_if_copy_address(transition_data* transition, char** operand, ADDRESS_METHOD* operand_address_method);
+
+bool are_operand_methods_allowed_in_operation(decoded_operation* current_operation);
+
+int get_operation_size(transition_data* transition, decoded_operation* current_operation);
+
+void update_transition_with_last_operation(transition_data* transition, decoded_operation* decoded_operation);
 
 bool encode_operation(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files);
 bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic, compiler_output_files* output_files, line_info* p_info);
@@ -26,6 +35,10 @@ bool encode_memory_word(decoded_operation* p_decoded_operation, unsigned int* ic
 bool encode_direct(char* operand, unsigned int ic, line_info* p_info, compiler_output_files* output_files);
 bool encode_registers(char* source_register, char* target_register, unsigned int ic, line_info* p_info, FILE* p_file);
 bool encode_immediate(char* operand, unsigned int ic, line_info* p_info, FILE* p_file);
+
+machine_operation_definition* search_machine_operation_in_list(char* operation);
+void init_operation_list();
+void add_operation_to_list(char* name, unsigned int code, int operands);
 
 void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file);
 

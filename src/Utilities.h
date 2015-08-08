@@ -33,10 +33,6 @@ char* get_next_operand(line_info* info);
 ADDRESS_METHOD get_operand_method(char* operand);
 bool is_register(char* operand, int length);
 
-machine_operation_definition* get_operation_info(char* operation);
-void init_operation_list();
-void add_operation_to_list(char* name, unsigned int code, int operands);
-
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base, int minimal_returned_length);
 
 bool is_valid_lable (char* str);

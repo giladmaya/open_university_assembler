@@ -63,7 +63,6 @@
 #define OPERAND_NON_REGISTER_BITS_LENGTH 10
 #define REST_BITS_LENGTH 20
 
-
 /*
  * Operation definitions
  */

@@ -115,24 +115,6 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	}
 }
 
-/*
- * Description: Process an operation line
- * Input:		1. Line information
- * 				2. Current IC address
- * 				3. Is first operation
- * 				4. Previous address method
- */
-void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files) {
-	/* Gets all data about the current operation */
-	decoded_operation* p_decoded_operation = get_operation_data(transition);
-
-	if (p_decoded_operation == NULL) {
-		return;
-	}
-
-	/* Encode the operation */
-	encode_operation(p_decoded_operation, &(transition->IC), p_output_files);
-}
 
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file) {
 	char* number = convert_base10_to_target_base(ic, TARGET_BASE, 0);

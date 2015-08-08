@@ -14,8 +14,6 @@
 #include "Consts.h"
 #include "Utilities.h"
 
-operation_information_node_ptr p_operation_head = NULL;
-
 void print_compiler_error(char* message, line_info* info) {
 	fprintf(stderr, "Error: %s, File %s Line %d \n", message, info->file_name, info->line_number);
 }
@@ -111,68 +109,6 @@ void get_operation(char* word, char** operation, int* counter) {
 	}
 }
 
-machine_operation_definition* get_operation_info(char* operation) {
-	operation_information_node_ptr p_current;
-
-	if (p_operation_head == NULL) {
-		init_operation_list();
-	}
-
-	p_current = p_operation_head;
-
-	while (p_current != NULL) {
-		if (strcmp(p_current->data.name, operation) == 0) {
-			return &(p_current->data);
-		}
-
-		p_current = p_current->next;
-	}
-
-	return NULL;
-}
-
-void init_operation_list() {
-	int op_code = 0;
-
-	add_operation_to_list(MOV_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(CMP_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(ADD_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(SUB_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(NOT_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(CLR_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(LEA_OPERATION, op_code++, TWO_OPERANDS);
-	add_operation_to_list(INC_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(DEC_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(JMP_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(BNE_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(RED_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(PRN_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(JSR_OPERATION, op_code++, ONE_OPERAND);
-	add_operation_to_list(RTS_OPERATION, op_code++, NO_OPERANDS);
-	add_operation_to_list(STOP_OPERATION, op_code++, NO_OPERANDS);
-}
-
-void add_operation_to_list(char* name, unsigned int code, int operands) {
-	operation_information_node_ptr p_new = (operation_information_node_ptr)malloc(sizeof(operation_information_node));
-
-	if (p_new == NULL) {
-		/* Todo: bad alloc */
-		/*??*/
-		print_runtime_error("Could not allocate memory. Exit program");
-	} else {
-		p_new->data.name = name;
-		p_new->data.code = code;
-		p_new->data.operands_number = operands;
-		p_new->next = NULL;
-
-		if (p_operation_head == NULL) {
-			p_operation_head = p_new;
-		} else {
-			p_new->next = p_operation_head;
-			p_operation_head = p_new;
-		}
-	}
-}
 
 char* get_label(line_info* info) {
 	char* label = get_next_word(info);

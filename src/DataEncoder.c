@@ -227,7 +227,6 @@ void process_numbers(transition_data* transition) {
 
 /*
  * Description: Free list memory
- * Input:		1. List Head
  */
 void free_data_node_list() {
 	data_node_ptr p_cleaner_data = p_data_head;
@@ -245,6 +244,12 @@ void free_data_node_list() {
 	return;
 }
 
+/*
+ * Description: Gets the next number from the .data line
+ * Input:		1. Current transition data
+ * 				2. Pointer to the resulted number
+ * Output:		Is number valid
+ */
 bool get_next_number(transition_data* transition, int* number) {
 	skip_all_spaces(transition->current_line_information);
 

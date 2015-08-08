@@ -15,8 +15,6 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 
 void second_transition_process_line(transition_data* transition, compiler_output_files* output_files);
 
-void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files);
-
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file);
 
 #endif /* SECONDTRANSITION_H_ */

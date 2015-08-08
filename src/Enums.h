@@ -13,7 +13,7 @@
  */
 typedef enum
 {
-	INVALID = -1,
+	INVALID_ADDRESS_METHOD = -1,
 	IMMEDIATE = 0,
 	DIRECT = 1,
 	COPY_PREVIOUS = 2,
