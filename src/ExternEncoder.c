@@ -1,8 +1,11 @@
 /*
- * ExternEncoder.c
- *
- *  Created on: Aug 7, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	ExternEncoder.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to .extern line processing
+ ====================================================================================
  */
 
 #include "ExternEncoder.h"
@@ -27,7 +30,7 @@ void create_extern_output_file_if_needed(compiler_output_files* output_files, ch
 /*
  * Description: Process the extern definition in first transition.
  * 				Adds it into the symbol table
- * Input:		1. Line information
+ * Input:		1. Current transition
  */
 void first_transition_process_extern(transition_data* transition) {
 	symbol_node_ptr p_symbol = NULL;

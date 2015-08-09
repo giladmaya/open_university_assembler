@@ -1,8 +1,11 @@
 /*
- * Utilities.c
- *
- *  Created on: Jul 14, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	Utilities.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds utils methods used to process assembly line
+ ====================================================================================
  */
 
 #include <stdio.h>
@@ -14,17 +17,31 @@
 #include "Consts.h"
 #include "Utilities.h"
 
+/*
+ * Description: Prints a compiler error to the user
+ * Input:		1. Message
+ * 				2. Current line
+ */
 void print_compiler_error(char* message, line_info* info) {
 	fprintf(stderr, "Error: %s, File %s Line %d \n", message, info->file_name, info->line_number);
 }
 
+/*
+ * Description: Prints runtime error
+ * Input:		Message
+ */
 void print_runtime_error(char* message) {
 	fprintf(stderr, "Error: %s \n", message);
 }
 
+/*
+ * Description: Skips all the spaces until next word
+ * Input:		Line information
+ */
 void skip_all_spaces(line_info* info) {
 	int index = info->current_index;
 
+	/* Scans all spaces */
 	while ((index < info->line_length) && isspace(info->line_str[index])) {
 		index++;
 	}
@@ -32,6 +49,11 @@ void skip_all_spaces(line_info* info) {
 	info->current_index = index;
 }
 
+/*
+ * Description: Read next word from line
+ * Input:		Current transition data
+ * Output:		Extracted word
+ */
 char* get_next_word(transition_data* transition)
 {
 	char* word;
@@ -41,6 +63,7 @@ char* get_next_word(transition_data* transition)
 
 	word_end_index  = word_start_index = i = transition->current_line_information->current_index;
 
+	/* Find word position */
 	for (;i < transition->current_line_information->line_length; i++) {
 		if (!isspace(transition->current_line_information->line_str[i])) {
 			word_end_index = i;
@@ -56,6 +79,7 @@ char* get_next_word(transition_data* transition)
 	if (word == NULL) {
 		transition->is_runtimer_error = true;
 	} else {
+		/* Copy word */
 		strncpy(word, transition->current_line_information->line_str + word_start_index, word_length);
 		(word)[word_length] = END_OF_STRING;
 
@@ -65,9 +89,17 @@ char* get_next_word(transition_data* transition)
 	return word;
 }
 
+/*
+ * Description: Creates a line information structure
+ * Input:		1. File name
+ * 				2. Line number
+ * 				3. Line content
+ * Output:		Pointer to line information
+ */
 line_info* create_line_info(char* file_name, int line_number, char* line_str) {
 	line_info* info = (line_info*)allocate_memory(sizeof(line_info));
 
+	/* Initialize */
 	if (info != NULL) {
 		info->current_index = 0;
 		info->file_name = file_name;
@@ -98,53 +130,13 @@ bool is_empty_or_comment(char* line) {
 	return true;
 }
 
-char* get_next_operand(transition_data* transition) {
-	char* operand = NULL;
-	int i, operand_end_index, operand_start_index, operand_length;
-
-	skip_all_spaces(transition->current_line_information);
-
-	operand_end_index  = operand_start_index = i = transition->current_line_information->current_index;
-
-	for (;i < transition->current_line_information->line_length; i++) {
-		if (!isspace(transition->current_line_information->line_str[i]) &&
-				(transition->current_line_information->line_str[i] != OPERAND_SEPERATOR)) {
-			operand_end_index = i;
-		}
-		else
-		{
-			break;
-		}
-	}
-
-	operand_length = operand_end_index - operand_start_index + 1;
-
-	operand = allocate_string(operand_length);
-
-	if (operand == NULL) {
-		transition->is_runtimer_error = true;
-	} else {
-		strncpy(operand, transition->current_line_information->line_str + operand_start_index, operand_length);
-		operand[operand_length] = '\0';
-
-		transition->current_line_information->current_index = operand_end_index + 1;
-	}
-
-	return operand;
-}
-
-bool is_register(char* operand, int length) {
-	int digit;
-
-	if ((length != 2) || (operand[0] != REGISTER_FIRST_TOKEN) || (!isdigit(operand[1]))) {
-		return false;
-	}
-
-	digit = atoi(operand + 1);
-
-	return (digit < REGISTERS_COUNT) && (digit >= 0);
-}
-
+/*
+ * Description: Converts a number in base 10 to wanted base
+ * Input:		1. Number in base 10
+ * 				2. Wanted base
+ * 				3. Minimal length of returned word
+ * Output:		Number in wanted base
+ */
 char* convert_base10_to_target_base(unsigned int base10_number, int target_base, int minimal_returned_length) {
 	char* result = NULL;
 	char* current_token = NULL;
@@ -160,6 +152,7 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 		result_length = 1;
 	}
 
+	/* Convert number to target base */
 	while (base10_number != 0) {
 		int temp;
 
@@ -189,6 +182,7 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 	/* Making sure that the returned result is with the right length and if not, add 0 to the right */
 	result_length = strlen(result);
 
+	/* Add zeros to the left if necessary */
 	while (result_length < minimal_returned_length) {
 		current_token = allocate_string(result_length);
 		current_token[0] = '0';
@@ -204,6 +198,11 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 	return result;
 }
 
+/*
+ * Description: Allocates a string
+ * Input:		Number of tokens in string
+ * Output:		Allocated string
+ */
 char* allocate_string(int string_length) {
 	return (char*)allocate_memory(sizeof(char) * (string_length + 1));
 }
@@ -223,10 +222,16 @@ void* allocate_memory(int bytes) {
 	return result;
 }
 
+/*
+ * Description: Checks if there are tokens that aren't spaces after current index
+ * Input:		Line information
+ * Output:		True if found non-space token, otherwise false
+ */
 bool is_end_of_data_in_line(line_info* info) {
 	bool is_end = true;
 	int i;
 
+	/* Searches non-space token */
 	for (i = info->current_index; i < info->line_length; i++) {
 		if (!isspace(info->line_str[i])) {
 			is_end = false;
@@ -250,6 +255,11 @@ void skip_label(line_info* info) {
 	}
 }
 
+/*
+ * Description: Checks if the string is a valid label
+ * Input:		String to check
+ * Output:		True if label, otherwise false
+ */
 bool is_valid_label(char* str) {
 	int i;
 	int len = strlen(str);
@@ -274,9 +284,14 @@ bool is_valid_label(char* str) {
 	}
 
 	/* All was fine */
-	return !is_operation_name(str) && !is_register(str, len);
+	return !is_operation_name(str) && !is_register(str);
 }
 
+/*
+ * Description: Checks if string is an operation name
+ * Input:		String to check
+ * Output:		True if string is an operation, otherwise false
+ */
 bool is_operation_name(char* str) {
 	return (strcmp(str, MOV_OPERATION) == 0) || (strcmp(str, CMP_OPERATION) == 0) ||
 			(strcmp(str, ADD_OPERATION) == 0) || (strcmp(str, SUB_OPERATION) == 0) ||
@@ -297,6 +312,11 @@ bool is_valid_is_operation_line (line_info* info) {
 	return info->line_length < OPERATION_LINE_MAX_LENGTH;
 }
 
+/*
+ * Description: Replaces the content of old string with current string
+ * Input:		1. Old string
+ * 				2. New string
+ */
 void replace_content(char** current_string, char* new_string) {
 	char* temp = allocate_string(strlen(new_string));
 
@@ -308,9 +328,14 @@ void replace_content(char** current_string, char* new_string) {
 	strcpy(*current_string, new_string);
 }
 
+/*
+ * Description: Creates a transition data structure
+ * Output:		Basic transition data
+ */
 transition_data* create_transition_data() {
 	transition_data* transition = (transition_data*)allocate_memory(sizeof(transition_data));
 
+	/* Initialize */
 	if (transition != NULL) {
 		transition->IC = 0;
 		transition->DC = 0;
@@ -360,4 +385,23 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
  */
 bool is_end_of_line(line_info* info) {
 	return info->current_index == info->line_length;
+}
+
+/*
+ * Description: Checks if operand is a register
+ * Input:		1. Operand
+				2. Operand length
+ * Output:		True if register, otherwise false
+ */
+bool is_register(char* operand) {
+	int digit;
+	int length = strlen(operand);
+
+	if ((length != 2) || (operand[0] != REGISTER_FIRST_TOKEN) || (!isdigit(operand[1]))) {
+		return false;
+	}
+
+	digit = atoi(operand + 1);
+
+	return (digit < REGISTERS_COUNT) && (digit >= 0);
 }

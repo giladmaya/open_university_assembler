@@ -1,8 +1,11 @@
 /*
- * SymbolTable.c
- *
- *  Created on: Jul 17, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	SymbolTable.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to working with the symbol table
+ ====================================================================================
  */
 
 #include "Types.h"

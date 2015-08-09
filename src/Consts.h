@@ -1,8 +1,11 @@
 /*
- * Consts.h
- *
- *  Created on: Jul 14, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	Consts.h
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds constants used in all program
+ ====================================================================================
  */
 
 #ifndef CONSTS_H_

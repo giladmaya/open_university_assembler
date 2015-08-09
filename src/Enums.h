@@ -1,8 +1,11 @@
 /*
- * Enums.h
- *
- *  Created on: Jul 9, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	Enums.h
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds enums used in program
+ ====================================================================================
  */
 
 #ifndef ENUMS_H_

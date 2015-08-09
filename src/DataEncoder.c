@@ -1,8 +1,11 @@
 /*
- * Data.c
- *
- *  Created on: Jul 17, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	DataEncoder.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to .string and .data line processing
+ ====================================================================================
  */
 
 #include "Types.h"

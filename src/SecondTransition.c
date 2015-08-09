@@ -1,8 +1,11 @@
 /*
- * SecondTransition.c
- *
- *  Created on: Aug 1, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	SecondTransition.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to the second transition run
+ ====================================================================================
  */
 
 #include "SecondTransition.h"

@@ -1,14 +1,15 @@
 /*
- * Types.h
- *
- *  Created on: Jul 9, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	Types.h
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds data types used in assembler file processing
+ ====================================================================================
  */
 
 #ifndef TYPES_H_
 #define TYPES_H_
-
-/* TODO: Consider explaining data structures */
 
 #include "Enums.h"
 #include "Consts.h"

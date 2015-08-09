@@ -2,14 +2,9 @@
  ====================================================================================
  Name		: 	FirstTransition.c
 
- Author's	: 	Maya Gilad, Idan Levi
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
 
- Description: 	A
- Input		:	A
-
- Output		:	A
-
- Assumptions:
+ Description: 	This file holds methods relevant to the first transition run
  ====================================================================================
  */
 

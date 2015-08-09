@@ -1,14 +1,15 @@
-/* TODO : Write all heades
+/*
  ====================================================================================
  Name		: 	Compiler.c
 
- Author's	: 	Maya Gilad, Idan Levi
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
 
- Description: 	This program will check if there is a path between 2 nodes
-				in a directed graph (tree)
+ Description: 	This program will try to compile an assembler code file.
+ 	 	 	 	In case of errors in file it will print them out.
  Input		:	Arguments as file name without extension to be compiled
 
- Output		:	For each input file we create :
+ Output		:	If we've found syntax errors - prints them.
+ 	 	 	 	Else for each valid file we create
  	 	 	 	 1) ob  - decoded operations in base 4 and memory address
  	 	 	 	 2) ent - memory address of labels
  	 	 	 	 3) ext - memory address of each extern variable used in ob file

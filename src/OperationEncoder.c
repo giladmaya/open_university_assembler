@@ -1,8 +1,11 @@
 /*
- * OperationEncoder.c
- *
- *  Created on: Aug 4, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	OperationEncoder.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to the operation line processing
+ ====================================================================================
  */
 
 #include "Consts.h"
@@ -431,7 +434,7 @@ ADDRESS_METHOD get_address_method(transition_data* transition, char* operand) {
 				return COPY_PREVIOUS;
 			}
 			/* The operand is r0-r7 */
-			else if (is_register(operand, operand_length)) {
+			else if (is_register(operand)) {
 				return DIRECT_REGISTER;
 			}
 			/* The operand is a variable */
@@ -833,4 +836,46 @@ void free_operation_list() {
 		free (p_cleaner_data);
 	}
 	return;
+}
+
+/*
+ * Description: Reads the next operand from the line
+ * Input:		Current transition
+ * Output:		Operand
+ */
+char* get_next_operand(transition_data* transition) {
+	char* operand = NULL;
+	int i, operand_end_index, operand_start_index, operand_length;
+
+	skip_all_spaces(transition->current_line_information);
+
+	operand_end_index  = operand_start_index = i = transition->current_line_information->current_index;
+
+	/* Find operand position */
+	for (;i < transition->current_line_information->line_length; i++) {
+		if (!isspace(transition->current_line_information->line_str[i]) &&
+				(transition->current_line_information->line_str[i] != OPERAND_SEPERATOR)) {
+			operand_end_index = i;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	operand_length = operand_end_index - operand_start_index + 1;
+
+	operand = allocate_string(operand_length);
+
+	if (operand == NULL) {
+		transition->is_runtimer_error = true;
+	} else {
+		/* Copy operand */
+		strncpy(operand, transition->current_line_information->line_str + operand_start_index, operand_length);
+		operand[operand_length] = '\0';
+
+		transition->current_line_information->current_index = operand_end_index + 1;
+	}
+
+	return operand;
 }

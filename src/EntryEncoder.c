@@ -1,8 +1,11 @@
 /*
- * EntryEncoder.c
- *
- *  Created on: Aug 7, 2015
- *      Author: student
+ ====================================================================================
+ Name		: 	EntryEncoder.c
+
+ Author's	: 	Maya Gilad 302526850, Idan Levi 301242434
+
+ Description: 	This file holds methods relevant to .entry line processing
+ ====================================================================================
  */
 
 #include "Consts.h"
