@@ -34,7 +34,7 @@
 /*
  * Description: Cleaning up memory between files, global call for all cleanups
  */
-void memory_cleanup() {
+void file_compilation_memory_clean() {
 	free_data_node_list();
 	free_symbol_list();
 	return;
@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 	/* Check if no arg's provided */
 	if (argc == 1) {
 		print_runtime_error("Expected an argument");
+		exit(0);
 	}
 	
 	/* Initialize operation list */
@@ -64,7 +65,6 @@ int main(int argc, char* argv[]) {
 	for (i=1; i < argc; i++) {
 		unsigned int ic;
 		unsigned int dc;
-		bool should_continue;
 
 		/* Create full file path */
 		curr_file = allocate_string(strlen(argv[i])+strlen(FILE_EXT));
@@ -73,23 +73,26 @@ int main(int argc, char* argv[]) {
 
 		/* Open the file or die*/
 		p_file = fopen(curr_file, READ_ONLY_MODE);
+
 		if (p_file == NULL) {
+			/* TODO: write file name */
 			print_runtime_error("Could not open source file");
-		}
-
-		/* Check if we had errors, if we didnt, move on to the next run */
-		should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
-
-		if (should_continue) {
-			rewind(p_file);
-			second_transition_execute(p_file, argv[i], ic, dc);
 		} else {
-			/* TODO: Stop?, Compile next */
+			/* Check if we had errors, if we didn't, move on to the next run */
+			bool should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
+
+			if (should_continue) {
+				rewind(p_file);
+				second_transition_execute(p_file, argv[i], ic, dc);
+			} else {
+				/* TODO: Stop?, Compile next */
+			}
+
+			/* TODO: Decide where to put is cleanup */
+			file_compilation_memory_clean();
+			fclose(p_file);
 		}
 
-		/* TODO: Decide where to put is cleanup */
-		memory_cleanup();
-		fclose(p_file);
 		free(curr_file);
 	}
 	

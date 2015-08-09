@@ -154,7 +154,11 @@ decoded_operation* get_decoded_operation(transition_data* transition) {
 	decoded_operation* current_operation = NULL;
 
 	/* Get operation name from line */
-	char* operation_name = get_operation_name(transition->current_line_information);
+	char* operation_name = get_operation_name(transition);
+
+	if (transition->is_runtimer_error) {
+		return NULL;
+	}
 
 	/* Find operation in machine operation list */
 	machine_operation_definition* p_operation_information = search_machine_operation_in_list(operation_name);
@@ -216,8 +220,11 @@ decoded_operation* get_decoded_operation(transition_data* transition) {
 bool replace_operand_if_copy_address(transition_data* transition, char** operand, ADDRESS_METHOD* operand_address_method) {
 	bool is_valid = true;
 
+	/* The operand is $$ */
 	if (*operand_address_method == COPY_PREVIOUS) {
+		/* The last operation had at least one operand */
 		if (transition->prev_operation_operand != NULL) {
+			/* Replaces the operand from $$ to the first operand of the last operation */
 			replace_content(operand, transition->prev_operation_operand);
 			*operand_address_method = transition->prev_operand_address_method;
 		} else {
@@ -243,29 +250,35 @@ bool get_operands(transition_data* transition, int operands_count, char** source
 
 	switch (operands_count) {
 		case NO_OPERANDS: {
+			/* There aren't any operands */
 			*source_operand = NULL;
 			*target_operand = NULL;
 			break;
 		}
 		case ONE_OPERAND: {
+			/* Reads the target operand from the line */
 			*source_operand = NULL;
 			*target_operand = get_next_operand(transition);
 			break;
 		}
 		case TWO_OPERANDS: {
+			/* Reads the source operand from the line */
 			*source_operand = get_next_operand(transition);
 
 			if (transition->is_runtimer_error) {
-				return false;
+				is_valid = false;
+				break;
 			}
 
 			skip_all_spaces(transition->current_line_information);
 
+			/* There must be a comma between operands */
 			if (transition->current_line_information->line_str[transition->current_line_information->current_index] != OPERAND_SEPERATOR) {
 				print_compiler_error("Missing comma between two operands", transition->current_line_information);
 				transition->is_compiler_error = true;
 				is_valid = false;
 			} else {
+				/* Reads the target operand from the line */
 				transition->current_line_information->current_index++;
 				*target_operand = get_next_operand(transition);
 			}
@@ -298,6 +311,12 @@ bool get_operands(transition_data* transition, int operands_count, char** source
 	return is_valid;
 }
 
+/*
+ * Description: Gets how many times we need to encode the operation
+ * Input:		1. Current transition
+ * 				2. Out - how many times we need to encode the operation
+ * Output:		Is the result valid
+ */
 bool get_operation_times_counter(transition_data* transition, int* times) {
 	/* This isn't a valid operation. An operation name must be followed by a number */
 	if (!isdigit(transition->current_line_information->line_str[transition->current_line_information->current_index])) {
@@ -309,17 +328,21 @@ bool get_operation_times_counter(transition_data* transition, int* times) {
 		int number_length = 0;
 		int start_index = transition->current_line_information->current_index;
 
+		/* Searches for the position of the number in the line */
 		while (isdigit(transition->current_line_information->line_str[transition->current_line_information->current_index])) {
 			number_length++;
 			transition->current_line_information->current_index++;
 		};
 
+		/* Creates a representation of the number */
 		number = allocate_string(number_length + 1);
 		strncpy(number, transition->current_line_information->line_str + start_index, number_length);
 		number[number_length] = END_OF_STRING;
 
+		/* Converts to valid integer */
 		*times = atoi(number);
 
+		/* This isn't a number or it is in invalid range */
 		if (times <= 0) {
 			print_compiler_error("The number after operation must be Natural (1, 2, 3, ..)", transition->current_line_information);
 			transition->is_compiler_error = true;
@@ -330,38 +353,58 @@ bool get_operation_times_counter(transition_data* transition, int* times) {
 	return true;
 }
 
-char* get_operation_name(line_info* p_info) {
+/*
+ * Description: Gets the operation name from the line
+ * Input:		Line information
+ * Output:		Operation name
+ */
+char* get_operation_name(transition_data* transition) {
 	char* result_operation_name;
 	char* operation_name;
 	int operation_name_length = 0;
 
-	skip_all_spaces(p_info);
+	skip_all_spaces(transition->current_line_information);
 
-	operation_name = p_info->line_str + p_info->current_index;
+	operation_name = transition->current_line_information->line_str + transition->current_line_information->current_index;
 
-	while (isalpha(p_info->line_str[p_info->current_index])) {
-		(p_info->current_index)++;
+	/* Searches for the position of the operation inside the line */
+	while (isalpha(transition->current_line_information->line_str[transition->current_line_information->current_index])) {
+		(transition->current_line_information->current_index)++;
 		operation_name_length++;
 	}
 
-	result_operation_name = allocate_string(operation_name_length + 1);
+	result_operation_name = allocate_string(operation_name_length);
 
-	strncpy(result_operation_name, operation_name, operation_name_length);
-	result_operation_name[operation_name_length] = END_OF_STRING;
+	if (result_operation_name != NULL) {
+		/* Copies the operation's name */
+		strncpy(result_operation_name, operation_name, operation_name_length);
+		result_operation_name[operation_name_length] = END_OF_STRING;
+	} else {
+		transition->is_runtimer_error = true;
+	}
 
 	return result_operation_name;
 }
 
+/*
+ * Description: Gets the address method according to the operand
+ * Input:		1. Current transition
+ * 				2. Current operand
+ * Output:		Address method
+ */
 ADDRESS_METHOD get_address_method(transition_data* transition, char* operand) {
+	/* The operation has no source or target operand. Use IMMEDIATE method for encoding */
 	if (operand == NULL) {
 		return IMMEDIATE;
 	} else {
 		int operand_length = strlen(operand);
 
 		if (operand_length > 0) {
+			/* Operand starts with a # */
 			if (operand[0] == IMMEDIATE_TOKEN) {
 				int i = 1;
 
+				/* Operand has + or - on its' start */
 				if ((operand[1] == MINUS_SIGN) || (operand[1] == PLUS_SIGN)) {
 					i++;
 
@@ -372,6 +415,7 @@ ADDRESS_METHOD get_address_method(transition_data* transition, char* operand) {
 					}
 				}
 
+				/* Check all operand's tokens are valid digits */
 				for (; i < operand_length; i++) {
 					if (!isdigit(operand[i])) {
 						print_compiler_error("Immediate token # must be followed by a valid number", transition->current_line_information);
@@ -381,11 +425,17 @@ ADDRESS_METHOD get_address_method(transition_data* transition, char* operand) {
 				}
 
 				return IMMEDIATE;
-			} else if (strcmp(operand, COPY_PERVIOUS_STR) == 0) {
+			}
+			/* The operand is equal to $$ */
+			else if (strcmp(operand, COPY_PERVIOUS_STR) == 0) {
 				return COPY_PREVIOUS;
-			} else if (is_register(operand, operand_length)) {
+			}
+			/* The operand is r0-r7 */
+			else if (is_register(operand, operand_length)) {
 				return DIRECT_REGISTER;
-			} else if (is_valid_label(operand)) {
+			}
+			/* The operand is a variable */
+			else if (is_valid_label(operand)) {
 				return DIRECT;
 			} else {
 				print_compiler_error("Operand isn't a valid label, register, number or $$", transition->current_line_information);
@@ -482,6 +532,7 @@ bool encode_operation(transition_data* transition, decoded_operation* p_decoded_
 	encoded_operation coded_op;
 	int i;
 
+	/* Initlaizes the encoded operation with its' values */
 	coded_op.bits.source_operand_address_method =
 			p_decoded_operation->source_operand_address_method;
 	coded_op.bits.target_operand_address_method =
@@ -491,6 +542,7 @@ bool encode_operation(transition_data* transition, decoded_operation* p_decoded_
 	coded_op.bits.era = ABSOLUTE;
 	coded_op.bits.rest = 0;
 
+	/* Encode the operation */
 	for (i = 1; i <= p_decoded_operation->times; i++) {
 		print_encoding_to_file(transition->IC + ADDRESS_START, coded_op.value, output_files->ob_file);
 
@@ -519,6 +571,7 @@ bool encode_operation(transition_data* transition, decoded_operation* p_decoded_
 bool encode_operands(transition_data* transition, decoded_operation* p_decoded_operation, compiler_output_files* output_files) {
 	bool is_valid;
 
+	/* Both source and target operands are registers */
 	if ((p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) &&
 			(p_decoded_operation->target_operand_address_method == DIRECT_REGISTER)) {
 		is_valid = encode_registers(
@@ -526,8 +579,9 @@ bool encode_operands(transition_data* transition, decoded_operation* p_decoded_o
 				p_decoded_operation->target_operand, output_files->ob_file);
 		transition->IC++;
 	} else {
+		/* The operation has two operands */
 		if (p_decoded_operation->operation->operands_number == 2) {
-
+			/* Encode the source operand */
 			if (p_decoded_operation->source_operand_address_method == DIRECT) {
 				is_valid = encode_direct(transition, p_decoded_operation->source_operand, output_files);
 			} else if (p_decoded_operation->source_operand_address_method == DIRECT_REGISTER) {
@@ -539,6 +593,7 @@ bool encode_operands(transition_data* transition, decoded_operation* p_decoded_o
 			transition->IC++;
 		}
 
+		/* Encode the target operand */
 		if (p_decoded_operation->target_operand_address_method == DIRECT) {
 			is_valid = encode_direct(transition, p_decoded_operation->target_operand, output_files);
 		} else if (p_decoded_operation->target_operand_address_method == DIRECT_REGISTER) {
@@ -561,10 +616,11 @@ bool encode_operands(transition_data* transition, decoded_operation* p_decoded_o
  * Output:		Was operand encoded successfully
  */
 bool encode_direct(transition_data* transition, char* operand, compiler_output_files* output_files) {
+	/* This a variable. Therefore it must be a symbol */
 	symbol_node_ptr p_symbol = search_symbol(operand);
 
 	if (p_symbol == NULL) {
-		print_compiler_error("Using unknown operand", transition->current_line_information);
+		print_compiler_error("Using unknown symbol", transition->current_line_information);
 		transition->is_compiler_error = true;
 		return false;
 	} else {
@@ -572,6 +628,7 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 
 		word.non_register_address.operand_address = p_symbol->current_symbol.address;
 
+		/* The symbol is external. Encode the location it is used into the ext file */
 		if (p_symbol->current_symbol.is_external) {
 			word.non_register_address.era = EXTERNAL;
 
@@ -584,7 +641,6 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 
 			write_extern_to_output_file(operand, transition->IC + ADDRESS_START, output_files->extern_file);
 		} else {
-
 			word.non_register_address.era = RELOCATABLE;
 		}
 
@@ -607,13 +663,17 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
 bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file) {
 	operand_memory_word word;
 
+	/* The target register exists */
 	if (source_register != NULL) {
+		/* Encode the register's number */
 		word.register_address.source_register_address = atoi(source_register + 1);
 	} else {
 		word.register_address.source_register_address = NO_ADDRESS;
 	}
 
+	/* The target register exists */
 	if (target_register != NULL) {
+		/* Encode the register's number */
 		word.register_address.target_register_address = atoi(target_register + 1);
 	} else {
 		word.register_address.target_register_address = NO_ADDRESS;
@@ -638,6 +698,7 @@ bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) 
 	int number;
 	operand_memory_word word;
 
+	/* Convert the number into a integer */
 	number = atoi(operand + 1);
 
 	word.non_register_address.operand_address = number;
@@ -660,6 +721,7 @@ void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_fi
 
 	/* Print Address base value */
 	base4_value = convert_base10_to_target_base(address, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
+
 	fputs(base4_value, p_file);
 	fputc(COLUMN_SEPARATOR, p_file);
 
@@ -668,6 +730,9 @@ void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_fi
 	/* Print operation base value */
 	base4_value = convert_base10_to_target_base(value, TARGET_BASE, TARGET_OPERATION_WORD_LENGTH);
 	fputs(base4_value, p_file);
+
+	free(base4_value);
+
 	fputc(END_OF_LINE, p_file);
 }
 
@@ -678,10 +743,9 @@ void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_fi
  * Output:		If found returns machine operation information, otherwise NULL
  */
 machine_operation_definition* search_machine_operation_in_list(char* operation) {
-	operation_information_node_ptr p_current;
+	operation_information_node_ptr p_current = p_operation_head;
 
-	p_current = p_operation_head;
-
+	/* Scan the operation list and search for the operation */
 	while (p_current != NULL) {
 		if (strcmp(p_current->data.name, operation) == 0) {
 			return &(p_current->data);
@@ -702,6 +766,7 @@ bool init_operation_list() {
 
 	int op_code = 0;
 
+	/* Initializes the operations */
 	initialized &= add_operation_to_list(MOV_OPERATION, op_code++, TWO_OPERANDS);
 	initialized &= add_operation_to_list(CMP_OPERATION, op_code++, TWO_OPERANDS);
 	initialized &= add_operation_to_list(ADD_OPERATION, op_code++, TWO_OPERANDS);
@@ -722,6 +787,13 @@ bool init_operation_list() {
 	return initialized;
 }
 
+/*
+ * Description: Adds an operation into the list
+ * Input:		1. Operation name
+ * 				2. Op code
+ * 				3. Number of operands
+ * Output:		Did add successfully
+ */
 bool add_operation_to_list(char* name, unsigned int code, int operands) {
 	bool added = false;
 

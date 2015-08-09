@@ -17,7 +17,7 @@ void first_transition_process_operation(transition_data* transition, char* label
 void second_transition_process_operation(transition_data* transition, compiler_output_files* p_output_files);
 
 decoded_operation* get_decoded_operation(transition_data* transition);
-char* get_operation_name(line_info* p_info);
+char* get_operation_name(transition_data* transition);
 bool get_operation_times_counter(transition_data* transition, int* times);
 bool get_operands(transition_data* transition, int operands_count, char** source_operand, char** target_operand);
 ADDRESS_METHOD get_address_method(transition_data* transition, char* operand);

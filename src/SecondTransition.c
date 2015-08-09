@@ -25,14 +25,17 @@
  * 				2. Name of input file
  */
 void second_transition_execute(FILE* pFile, char* file_name_without_extension, unsigned int previous_transition_ic, unsigned int previous_transition_dc) {
-	transition_data* transition = create_transition_data();
 	compiler_output_files output_files;
 	int line_number = 0;
+
+	/* Creates transition first data */
+	transition_data* transition = create_transition_data();
 
 	if (transition == NULL) {
 		return;
 	}
 
+	/* Create ob file */
 	output_files.ob_file = create_output_file(file_name_without_extension, CODE_FILE_EXT);
 
 	if (output_files.ob_file == NULL) {
@@ -42,9 +45,10 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 	output_files.entry_file = NULL;
 	output_files.extern_file = NULL;
 
+	/* Write first line to ob file */
 	write_code_and_data_size_to_output_file(previous_transition_ic, previous_transition_dc, output_files.ob_file);
 
-	/* Step 1 */
+	/* Step 1 - Initializes IC to zero*/
 	transition->IC = 0;
 
 	/* Reads all code lines */
@@ -53,13 +57,14 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 
 		line_number++;
 
-		/* Step 2 */
+		/* Step 2 - Read next line*/
 		if (fgets(line, MAX_LINE_LENGTH + 1, pFile)) {
 			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
 				transition->current_line_information =
 						create_line_info(file_name_without_extension, line_number, line);
 
+				/* Process line */
 				if (transition->current_line_information != NULL) {
 					second_transition_process_line(transition, &output_files);
 
@@ -71,9 +76,12 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 		}
 	}
 
+	/* No error has occurred */
 	if (!transition->is_runtimer_error && !transition->is_compiler_error) {
+		/* Write data initialization section into ob file */
 		write_data_to_output_file(output_files.ob_file);
 
+		/* Close files */
 		if (output_files.ob_file != NULL) {
 			fclose(output_files.ob_file);
 		}
@@ -86,6 +94,7 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 			fclose(output_files.entry_file);
 		}
 	} else {
+		/* Close and delete file */
 		if (output_files.ob_file != NULL) {
 			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(CODE_FILE_EXT));
 
@@ -103,6 +112,7 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 
 		}
 
+		/* Close and delete file */
 		if (output_files.extern_file != NULL) {
 			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(EXTERN_FILE_EXT));
 
@@ -120,6 +130,7 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 			}
 		}
 
+		/* Close and delete file */
 		if (output_files.entry_file != NULL) {
 			char* full_name = allocate_string(strlen(file_name_without_extension) + strlen(ENTRY_FILE_EXT));
 
@@ -135,8 +146,6 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 			}
 		}
 	}
-
-
 }
 
 /*
@@ -151,26 +160,28 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	int index;
 
 	/*
-	 * Step 3
-	 * Skips label if exists
+	 * Step 3 - Skips label if exists
 	 */
 	skip_label(transition->current_line_information);
 
 	index = transition->current_line_information->current_index;
 
+	/* Read line type */
 	type = get_next_word(transition);
 
 	/*
-	 * Step 4
+	 * Step 4 - Handle line type
 	 */
 	if (type == NULL) {
 		print_compiler_error("Invalid line", transition->current_line_information);
 		transition->is_compiler_error = true;
-	} else if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
-		/* Skip */
+	}
+	/* Line is data initialization - Ignores it */
+	else if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
+		/* Ignore */
 	}
 	/*
-	 * Step 5
+	 * Step 5 - Line is extern
 	 */
 	else if (strcmp(type, EXTERN_OPERATION) == 0) {
 		create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
@@ -179,8 +190,10 @@ void second_transition_process_line(transition_data* transition, compiler_output
 			transition->is_runtimer_error  = true;
 		}
 	} else if (strcmp(type, ENTRY_OPERATION) == 0) {
+		/* Process entry */
 		second_transition_process_entry(transition, output_files);
 	} else  {
+		/* Process operation */
 		transition->current_line_information->current_index = index;
 		second_transition_process_operation(transition, output_files);
 	}
@@ -190,7 +203,12 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	}
 }
 
-
+/*
+ * Description: Writes first line of ob file
+ * Input:		1. IC value
+ * 				2. DC value
+ * 				3. Ob file
+ */
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file) {
 	char* number;
 

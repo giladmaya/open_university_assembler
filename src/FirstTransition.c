@@ -40,9 +40,9 @@ bool can_use_copy_previous = false;
  * Input:		1. Input file
  * 				2. File name
  * Output:		Was transition successful
- * 				TODO : ADD MORE COMMENTS IN FUNC
  */
 bool first_transition_execute(FILE* assembler_input_file, char* file_name_without_extension, unsigned int* IC, unsigned int* DC) {
+	/* Creates the first transition data */
 	transition_data* transition = create_transition_data();
 	int line_number = 0;
 	bool success = true;
@@ -61,19 +61,18 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 
 		line_number++;
 
-		/* Step 2 */
+		/* Step 2 - Reads new line  */
 		if (fgets(line, MAX_LINE_LENGTH + 1, assembler_input_file)) {
 
 			/* This isn't an empty line or a comment */
 			if (!is_empty_or_comment(line)) {
 				line_info* info = create_line_info(file_name_without_extension, line_number, line);
 
+				/* Process the line */
 				if (info != NULL) {
 					transition->current_line_information = info;
 
-					/* Process the line */
 					first_transition_process_line(transition);
-
 					success &= !(transition->is_compiler_error);
 
 					free(info);
@@ -84,6 +83,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 		}
 	}
 
+	/* No error has occurred during transition */
 	if (!transition->is_compiler_error && !transition->is_runtimer_error) {
 		/* Changes the data address according to the code length */
 		update_data_address(transition->IC);
@@ -93,6 +93,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 		*DC = transition->DC;
 	}
 
+	/* Release memory */
 	if (transition->prev_operation_operand != NULL) {
 		free(transition->prev_operation_operand);
 	}
@@ -107,7 +108,6 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
  * Input:		1. Line information
  * 				2. Current IC address
  * 				3. Current DC value
- * 				TODO : ADD MORE COMMENTS IN FUNC
  */
 void first_transition_process_line(transition_data* transition) {
 	char* label = NULL;
@@ -118,19 +118,20 @@ void first_transition_process_line(transition_data* transition) {
 	skip_all_spaces(transition->current_line_information);
 
 	/*
-	 * Step 3
-	 * The first field is a label
+	 * Step 3 - Find label
 	 */
 	if ((partial_line = strchr(transition->current_line_information->line_str, LABEL_END_TOKEN)) != NULL) {
+
+		/* Find label position */
 		int start_label = transition->current_line_information->current_index;
 		int label_length = partial_line - transition->current_line_information->line_str - start_label;
-
 		label = allocate_string(label_length);
 		strncpy(label, transition->current_line_information->line_str + start_label, label_length);
 		label[label_length] = END_OF_STRING;
 
+		/* The label is valid */
 		if (is_valid_label(label)) {
-			/* Step 4 */
+			/* Step 4 - Turn symbol flag on */
 			is_symbol = true;
 			transition->current_line_information->current_index += label_length + 1;
 		} else {
@@ -140,30 +141,30 @@ void first_transition_process_line(transition_data* transition) {
 		}
 	}
 
+	/* Read line type */
 	line_type = get_next_word(transition);
 
 	/*
-	 * Step 5
+	 * Step 5 - Handle line type
 	 */
 	if (line_type == NULL) {
 		print_compiler_error("Invalid line", transition->current_line_information);
 		transition->is_compiler_error = true;
-	} else	if ((strcmp(line_type, DATA_OPERATION) == 0) || (strcmp(line_type, STRING_OPERATION) == 0)) {
+	}
+	/* Line is data initialization */
+	else if ((strcmp(line_type, DATA_OPERATION) == 0) || (strcmp(line_type, STRING_OPERATION) == 0)) {
 		first_transition_process_data(transition, label, line_type, is_symbol);
 	}
-	/*
-	 * Step 8
-	 */
-	else if ((strcmp(line_type, EXTERN_OPERATION) == 0) || (strcmp(line_type, ENTRY_OPERATION) == 0)) {
-		/* Step 9 */
-		if (strcmp(line_type, EXTERN_OPERATION) == 0) {
-			first_transition_process_extern(transition);
-		} else {
+	/* Step 8 - Line is extern */
+	else if (strcmp(line_type, EXTERN_OPERATION) == 0) {
+		first_transition_process_extern(transition);
+	}
+	/* Line is entry */
+	else if (strcmp(line_type, ENTRY_OPERATION) == 0) {
 			first_transition_process_entry(transition);
-		}
 	}
 	/*
-	 * Step 11
+	 * Step 11 - Line is suspected as operation
 	 */
 	else  {
 		transition->current_line_information->current_index -= strlen(line_type);
