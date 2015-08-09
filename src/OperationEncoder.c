@@ -32,6 +32,7 @@ void second_transition_process_operation(transition_data* transition, compiler_o
 	/* Encode the operation */
 	encode_operation(transition, p_decoded_operation, p_output_files);
 
+	/* Updates the transition with the source operand of the current operation */
 	update_transition_with_last_operation(transition, p_decoded_operation);
 }
 
@@ -42,6 +43,7 @@ void second_transition_process_operation(transition_data* transition, compiler_o
  * 				3. Does label exist
  */
 void first_transition_process_operation(transition_data* transition, char* label, bool is_symbol) {
+	/* Checks if the line is valid for an operation */
 	if (!is_valid_is_operation_line(transition->current_line_information)) {
 		print_compiler_error("Line exceeds max length", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -50,9 +52,11 @@ void first_transition_process_operation(transition_data* transition, char* label
 
 	/* Step 11 */
 	if (is_symbol) {
+		/* Checks if the symbol was defined in previous lines */
 		symbol_node_ptr p_searched_symbol = search_symbol(label);
 
 		if (p_searched_symbol == NULL) {
+			/* Creates a new symbol and adds it to the symbol table */
 			symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 
 			if (p_symbol != NULL) {
@@ -77,8 +81,10 @@ void first_transition_process_operation(transition_data* transition, char* label
 		/* Checks if the operands used in the operation are authorized */
 		if (are_operand_methods_allowed_in_operation(p_decoded_operation)) {
 
-			transition->IC += get_operation_size(transition, p_decoded_operation);
+			/* Calculate the operation's size */
+			transition->IC += calculate_operation_size(transition, p_decoded_operation);
 
+			/* Updates the transition with the source operand of the current operation */
 			update_transition_with_last_operation(transition, p_decoded_operation);
 
 		} else {
@@ -94,13 +100,20 @@ void first_transition_process_operation(transition_data* transition, char* label
  * 				2. Current decoded operation
  */
 void update_transition_with_last_operation(transition_data* transition, decoded_operation* decoded_operation) {
+
 	if (decoded_operation->source_operand != NULL) {
+		/* Updates the operand for copy-previous with the source operand of the current operation */
 		replace_content(&transition->prev_operation_operand, decoded_operation->source_operand);
 		transition->prev_operand_address_method = decoded_operation->source_operand_address_method;
 	} else if (decoded_operation->target_operand != NULL) {
+		/* Updates the operand for copy-previous with the target operand of the current operation */
 		replace_content(&transition->prev_operation_operand, decoded_operation->target_operand);
 		transition->prev_operand_address_method = decoded_operation->target_operand_address_method;
 	} else {
+		/*
+		 * The current operation has no operands, therefore we cannot use copy previous in the
+		 * next operation
+		 */
 		if (transition->prev_operation_operand != NULL) {
 			free(transition->prev_operation_operand);
 			transition->prev_operation_operand = NULL;
@@ -112,9 +125,10 @@ void update_transition_with_last_operation(transition_data* transition, decoded_
  * Description: Calculates how many memory words are used to encode the operation
  * Input:		1. Current transition data
  * 				2. Decoded operation
- * Output:		Memory words size for the encoded operation
+ * Output:		How many memory words should be used to encode the operation
  */
-int get_operation_size(transition_data* transition, decoded_operation* current_operation) {
+int calculate_operation_size(transition_data* transition, decoded_operation* current_operation) {
+	/* We need to encode the operation */
 	int size = OPERAION_MIN_WORD_SIZE;
 
 	/* If both operands are registers they share the same memory word */
@@ -122,6 +136,7 @@ int get_operation_size(transition_data* transition, decoded_operation* current_o
 			(current_operation->target_operand_address_method == DIRECT_REGISTER)) {
 		size++;
 	} else {
+		/* Each operand needs its own memory word */
 		size += current_operation->operation->operands_number;
 	}
 

@@ -20,7 +20,6 @@ void print_compiler_error(char* message, line_info* info) {
 
 void print_runtime_error(char* message) {
 	fprintf(stderr, "Error: %s \n", message);
-	exit(0);
 }
 
 void skip_all_spaces(line_info* info) {
@@ -209,6 +208,11 @@ char* allocate_string(int string_length) {
 	return (char*)allocate_memory(sizeof(char) * (string_length + 1));
 }
 
+/*
+ * Description: Allocates memory
+ * Input:		Number of bytes to allocate
+ * Output:		Pointer to number
+ */
 void* allocate_memory(int bytes) {
 	void* result = (void*)malloc(bytes);
 

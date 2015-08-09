@@ -25,7 +25,7 @@ bool replace_operand_if_copy_address(transition_data* transition, char** operand
 
 bool are_operand_methods_allowed_in_operation(decoded_operation* current_operation);
 
-int get_operation_size(transition_data* transition, decoded_operation* current_operation);
+int calculate_operation_size(transition_data* transition, decoded_operation* current_operation);
 
 void update_transition_with_last_operation(transition_data* transition, decoded_operation* decoded_operation);
 
