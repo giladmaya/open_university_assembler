@@ -5,3 +5,4 @@ TODO: Known bugs:
 
 QA :
 3. alert on multi entry (Work on extern but not entry)
+4. add the line information to runtime error 
