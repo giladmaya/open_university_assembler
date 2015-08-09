@@ -324,6 +324,7 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 
 	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(extension));
 
+	/* TODO : fix naming bug here -> added 'i\001' */
 	if (file_name != NULL) {
 		/* Creates code file output name */
 		strcpy(file_name, file_name_without_extension);
