@@ -319,13 +319,18 @@ transition_data* create_transition_data() {
 	return transition;
 }
 
+/*
+ * Description: Creates an output file from given file name
+ * Input:		1. File name without extension
+ * 				2. File extension
+ * Output:		Reference to created file
+ */
 FILE* create_output_file(char* file_name_without_extension, char* extension) {
 	FILE* p_output_file = NULL;
 	int file_name_length = strlen(file_name_without_extension) + strlen(extension);
 
-	char* file_name = allocate_memory(file_name_length);
+	char* file_name = allocate_string(file_name_length);
 
-	/* TODO : fix naming bug here -> added 'i\001' */
 	if (file_name != NULL) {
 		/* Creates code file output name */
 		strcpy(file_name, file_name_without_extension);
@@ -344,6 +349,11 @@ FILE* create_output_file(char* file_name_without_extension, char* extension) {
 	return p_output_file;
 }
 
+/*
+ * Description: Checks if we've reached end of line
+ * Input:		Line information
+ * Output:		True if we've reached end of lines, otherwise false
+ */
 bool is_end_of_line(line_info* info) {
 	return info->current_index == info->line_length;
 }
