@@ -321,14 +321,16 @@ transition_data* create_transition_data() {
 
 FILE* create_output_file(char* file_name_without_extension, char* extension) {
 	FILE* p_output_file = NULL;
+	int file_name_length = strlen(file_name_without_extension) + strlen(extension);
 
-	char* file_name = allocate_memory(strlen(file_name_without_extension) + strlen(extension));
+	char* file_name = allocate_memory(file_name_length);
 
 	/* TODO : fix naming bug here -> added 'i\001' */
 	if (file_name != NULL) {
 		/* Creates code file output name */
 		strcpy(file_name, file_name_without_extension);
 		strcat(file_name, extension);
+		file_name[file_name_length] = END_OF_STRING;
 
 		p_output_file = fopen(file_name, WRITE_MODE);
 
