@@ -10,7 +10,6 @@
 
 #include "Types.h"
 #include "Utilities.h"
-#include "OperationEncoder.h"
 #include "DataEncoder.h"
 #include "Consts.h"
 #include "SymbolTable.h"

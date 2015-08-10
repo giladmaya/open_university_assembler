@@ -713,31 +713,6 @@ bool encode_immediate(transition_data* transition, char* operand, FILE* p_file) 
 	return true;
 }
 
-/*
- * Description: Writes encoding into output file
- * Input:		1. Address in base 10
- * 				2. Memory word value in base 10
- * 				3. Output file
- */
-void print_encoding_to_file(unsigned int address, unsigned int value, FILE* p_file) {
-	char* base4_value;
-
-	/* Print Address base value */
-	base4_value = convert_base10_to_target_base(address, TARGET_BASE, TARGET_MEMORY_ADDRESS_WORD_LENGTH);
-
-	fputs(base4_value, p_file);
-	fputc(COLUMN_SEPARATOR, p_file);
-
-	free(base4_value);
-
-	/* Print operation base value */
-	base4_value = convert_base10_to_target_base(value, TARGET_BASE, TARGET_OPERATION_WORD_LENGTH);
-	fputs(base4_value, p_file);
-
-	free(base4_value);
-
-	fputc(END_OF_LINE, p_file);
-}
 
 
 /*

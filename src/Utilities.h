@@ -149,4 +149,12 @@ FILE* create_output_file(char* file_name_without_extension, char* extension);
  */
 bool is_end_of_line(line_info* info);
 
+/*
+ * Description: Writes encoding into output file
+ * Input:		1. Address in base 10
+ * 				2. Memory word value in base 10
+ * 				3. Output file
+ */
+void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file);
+
 #endif /* UTILITIES_H_ */

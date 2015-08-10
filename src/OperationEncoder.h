@@ -179,14 +179,6 @@ bool init_operation_list();
 bool add_operation_to_list(char* name, unsigned int code, int operands);
 
 /*
- * Description: Writes encoding into output file
- * Input:		1. Address in base 10
- * 				2. Memory word value in base 10
- * 				3. Output file
- */
-void print_encoding_to_file(unsigned int ic, unsigned int value, FILE* p_file);
-
-/*
  * Description: Free memory list
  */
 void free_operation_list();
