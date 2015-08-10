@@ -46,6 +46,8 @@ void second_transition_process_operation(transition_data* transition, compiler_o
  * 				3. Does label exist
  */
 void first_transition_process_operation(transition_data* transition, char* label, bool is_symbol) {
+	decoded_operation* p_decoded_operation = NULL;
+
 	/* Checks if the line is valid for an operation */
 	if (!is_valid_is_operation_line(transition->current_line_information)) {
 		print_compiler_error("Line exceeds max length", transition->current_line_information);
@@ -78,7 +80,7 @@ void first_transition_process_operation(transition_data* transition, char* label
 	}
 
 	/* Gets all data about the current operation */
-	decoded_operation* p_decoded_operation = get_decoded_operation(transition);
+	p_decoded_operation = get_decoded_operation(transition);
 
 	if (p_decoded_operation != NULL) {
 		/* Checks if the operands used in the operation are authorized */
@@ -155,6 +157,7 @@ int calculate_operation_size(transition_data* transition, decoded_operation* cur
  */
 decoded_operation* get_decoded_operation(transition_data* transition) {
 	decoded_operation* current_operation = NULL;
+	machine_operation_definition* p_operation_information = NULL;
 
 	/* Get operation name from line, or die */
 	char* operation_name = get_operation_name(transition);
@@ -163,7 +166,7 @@ decoded_operation* get_decoded_operation(transition_data* transition) {
 	}
 
 	/* Find operation in machine operation list */
-	machine_operation_definition* p_operation_information = search_machine_operation_in_list(operation_name);
+	p_operation_information = search_machine_operation_in_list(operation_name);
 
 	/* The operation name isn't valid */
 	if (p_operation_information == NULL) {
@@ -345,7 +348,7 @@ bool get_operation_times_counter(transition_data* transition, int* times) {
 		*times = atoi(number);
 
 		/* This isn't a number or it is in invalid range */
-		if (times <= 0) {
+		if (*times <= 0) {
 			print_compiler_error("The number after operation must be Natural (1, 2, 3, ..)", transition->current_line_information);
 			transition->is_compiler_error = true;
 			return false;
