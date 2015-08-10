@@ -97,7 +97,7 @@ void update_symbol_address(int ic_length) {
 }
 
 /*
- * Description: Free memory list
+ * Description: Free symbol list from memory
  */
 void free_symbol_list() {
 	symbol_node_ptr p_cleaner_data = p_symbol_head;

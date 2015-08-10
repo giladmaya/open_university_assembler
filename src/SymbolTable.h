@@ -44,7 +44,7 @@ symbol_node_ptr search_symbol(char* symbol_name);
 void update_symbol_address(int ic_length);
 
 /*
- * Description: Free memory list
+ * Description: Free symbol list from memory
  */
 void free_symbol_list();
 

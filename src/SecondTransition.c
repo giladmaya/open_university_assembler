@@ -24,8 +24,10 @@
 
 /*
  * Description: Executes the second transition
- * Input:		1. Input file
+ * Input:		1. Input file handle
  * 				2. Name of input file
+ * 				3. Code length in memory word
+ * 				4. Data length in memory word
  */
 void second_transition_execute(FILE* pFile, char* file_name_without_extension, unsigned int previous_transition_ic, unsigned int previous_transition_dc) {
 	compiler_output_files output_files;
@@ -153,18 +155,14 @@ void second_transition_execute(FILE* pFile, char* file_name_without_extension, u
 
 /*
  * Description: Processes a line in input file
- * Input:		1. Line information
- * 				2. Current DC value
- * 				3. Is first operation
- * 				4. Previous address method
+ * Input:		1. Current transition data
+ * 				2. Output files
  */
 void second_transition_process_line(transition_data* transition, compiler_output_files* output_files) {
 	char* type = NULL;
 	int index;
 
-	/*
-	 * Step 3 - Skips label if exists
-	 */
+	/* Step 3 - Skips label if exists */
 	skip_label(transition->current_line_information);
 
 	index = transition->current_line_information->current_index;
@@ -172,9 +170,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	/* Read line type */
 	type = get_next_word(transition);
 
-	/*
-	 * Step 4 - Handle line type
-	 */
+	/* Step 4 - Handle line type */
 	if (type == NULL) {
 		print_compiler_error("Invalid line", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -183,9 +179,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
 	else if ((strcmp(type, DATA_OPERATION) == 0) || (strcmp(type, STRING_OPERATION) == 0)) {
 		/* Ignore */
 	}
-	/*
-	 * Step 5 - Line is extern
-	 */
+	/* Step 5 - Line is extern */
 	else if (strcmp(type, EXTERN_OPERATION) == 0) {
 		create_extern_output_file_if_needed(output_files, transition->current_line_information->file_name);
 
@@ -210,7 +204,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
  * Description: Writes first line of ob file
  * Input:		1. IC value
  * 				2. DC value
- * 				3. Ob file
+ * 				3. Ob file handle
  */
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file) {
 	char* number;

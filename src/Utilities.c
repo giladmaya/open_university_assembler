@@ -152,7 +152,10 @@ char* convert_base10_to_target_base(unsigned int base10_number, int target_base,
 		result_length = 1;
 	}
 
-	/* Convert number to target base */
+	/* Convert number to target base by :
+	 * 	1) Dividing the whole number
+	 * 	2) Take the reminder and append it to the result string
+	 * */
 	while (base10_number != 0) {
 		int temp;
 
@@ -390,7 +393,6 @@ bool is_end_of_line(line_info* info) {
 /*
  * Description: Checks if operand is a register
  * Input:		1. Operand
-				2. Operand length
  * Output:		True if register, otherwise false
  */
 bool is_register(char* operand) {

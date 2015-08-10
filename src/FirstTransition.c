@@ -24,9 +24,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 
-/*
- * Global variables
- */
+/* Global variables */
 ADDRESS_METHOD last_operand_method;
 bool can_use_copy_previous = false;
 
@@ -46,7 +44,7 @@ bool first_transition_execute(FILE* assembler_input_file, char* file_name_withou
 		return false;
 	}
 
-	/* Step 1 */
+	/* Step 1 - Initialization */
 	transition->IC = 0;
 	transition->DC = 0;
 
@@ -112,9 +110,7 @@ void first_transition_process_line(transition_data* transition) {
 
 	skip_all_spaces(transition->current_line_information);
 
-	/*
-	 * Step 3 - Find label
-	 */
+	/* Step 3 - Find label */
 	if ((partial_line = strchr(transition->current_line_information->line_str, LABEL_END_TOKEN)) != NULL) {
 
 		/* Find label position */
@@ -139,9 +135,7 @@ void first_transition_process_line(transition_data* transition) {
 	/* Read line type */
 	line_type = get_next_word(transition);
 
-	/*
-	 * Step 5 - Handle line type
-	 */
+	/* Step 5 - Handle line type */
 	if (line_type == NULL) {
 		print_compiler_error("Invalid line", transition->current_line_information);
 		transition->is_compiler_error = true;
@@ -158,9 +152,7 @@ void first_transition_process_line(transition_data* transition) {
 	else if (strcmp(line_type, ENTRY_OPERATION) == 0) {
 			first_transition_process_entry(transition);
 	}
-	/*
-	 * Step 11 - Line is suspected as operation
-	 */
+	/* Step 11 - Line is suspected as operation */
 	else  {
 		transition->current_line_information->current_index -= strlen(line_type);
 		first_transition_process_operation(transition, label, is_symbol);
