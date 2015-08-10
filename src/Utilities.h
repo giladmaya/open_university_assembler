@@ -18,7 +18,6 @@
 /*
  * Description: Checks if operand is a register
  * Input:		1. Operand
-				2. Operand length
  * Output:		True if register, otherwise false
  */
 bool is_register(char* operand);

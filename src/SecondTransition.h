@@ -16,17 +16,17 @@
 
 /*
  * Description: Executes the second transition
- * Input:		1. Input file
+ * Input:		1. Input file handle
  * 				2. Name of input file
+ * 				3. Code length in memory word
+ * 				4. Data length in memory word
  */
 void second_transition_execute(FILE* pFile, char* file_name_without_extension, unsigned int previous_transition_ic, unsigned int previous_transition_dc);
 
 /*
  * Description: Processes a line in input file
- * Input:		1. Line information
- * 				2. Current DC value
- * 				3. Is first operation
- * 				4. Previous address method
+ * Input:		1. Current transition data
+ * 				2. Output files
  */
 void second_transition_process_line(transition_data* transition, compiler_output_files* output_files);
 
@@ -34,7 +34,7 @@ void second_transition_process_line(transition_data* transition, compiler_output
  * Description: Writes first line of ob file
  * Input:		1. IC value
  * 				2. DC value
- * 				3. Ob file
+ * 				3. Ob file handle
  */
 void write_code_and_data_size_to_output_file(unsigned int ic, unsigned int dc, FILE* output_file);
 

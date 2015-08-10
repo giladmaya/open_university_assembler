@@ -53,15 +53,15 @@ void first_transition_process_operation(transition_data* transition, char* label
 		return;
 	}
 
-	/* Step 11 */
+	/* Step 11 - Check if there is a symbol in the beginning of line */
 	if (is_symbol) {
 		/* Checks if the symbol was defined in previous lines */
 		symbol_node_ptr p_searched_symbol = search_symbol(label);
 
 		if (p_searched_symbol == NULL) {
-			/* Creates a new symbol and adds it to the symbol table */
-			symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 
+			/* Creates a new symbol and adds it to the symbol table, or die */
+			symbol_node_ptr p_symbol = create_symbol(label, transition->IC, false, false);
 			if (p_symbol != NULL) {
 				add_symbol_to_list(p_symbol);
 			} else {
@@ -156,9 +156,8 @@ int calculate_operation_size(transition_data* transition, decoded_operation* cur
 decoded_operation* get_decoded_operation(transition_data* transition) {
 	decoded_operation* current_operation = NULL;
 
-	/* Get operation name from line */
+	/* Get operation name from line, or die */
 	char* operation_name = get_operation_name(transition);
-
 	if (transition->is_runtimer_error) {
 		return NULL;
 	}
@@ -660,7 +659,7 @@ bool encode_direct(transition_data* transition, char* operand, compiler_output_f
  * Input:		1. Current transition
  * 				2. Source register
  * 				3. Target register
- * 				3. Output file
+ * 				4. Output file
  * Output:		Were operands encoded successfully
  */
 bool encode_registers(transition_data* transition, char* source_register, char* target_register, FILE* p_file) {
@@ -762,7 +761,7 @@ machine_operation_definition* search_machine_operation_in_list(char* operation) 
 
 /*
  * Description: Initializes the operation list used for encoding
- * Output:		Did the initialization end
+ * Output:		Did the initialization succeeded
  */
 bool init_operation_list() {
 	bool initialized = true;
@@ -824,7 +823,7 @@ bool add_operation_to_list(char* name, unsigned int code, int operands) {
 }
 
 /*
- * Description: Free memory list
+ * Description: Free memory for operations list
  */
 void free_operation_list() {
 	operation_information_node_ptr p_cleaner_data = p_operation_head;

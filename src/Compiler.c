@@ -14,8 +14,10 @@
  	 	 	 	 2) ent - memory address of labels
  	 	 	 	 3) ext - memory address of each extern variable used in ob file
 
- Assumptions: 1) We assume that we need to be forgiven to spaces - was required by Yakir
- 	 	 	 	 in the forum
+ Assumptions:	1) We assume that we need to be forgiven to spaces - was required by Yakir
+					in the forum
+				2) If there is an error on a source file, compile next
+				3) ob file ext will be used
  ====================================================================================
  */
 
@@ -23,14 +25,13 @@
 #include "SecondTransition.h"
 #include "Utilities.h"
 #include "Consts.h"
+#include "DataEncoder.h"
+#include "SymbolTable.h"
+#include "OperationEncoder.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-/* TODO : make a decision were to put code : */
-#include "DataEncoder.h"
-#include "SymbolTable.h"
-#include "OperationEncoder.h"
 
 /*
  * Description: Cleaning up memory between files, global call for all cleanups
@@ -76,8 +77,7 @@ int main(int argc, char* argv[]) {
 		p_file = fopen(curr_file, READ_ONLY_MODE);
 
 		if (p_file == NULL) {
-			/* TODO: write file name */
-			print_runtime_error("Could not open source file");
+			print_runtime_error("Could not open a source file");
 		} else {
 			/* Check if we had errors, if we didn't, move on to the next run */
 			bool should_continue = first_transition_execute(p_file, curr_file, &ic, &dc);
@@ -86,21 +86,16 @@ int main(int argc, char* argv[]) {
 				rewind(p_file);
 				second_transition_execute(p_file, argv[i], ic, dc);
 			} else {
-				/* TODO: Stop?, Compile next */
+				/* Compile next */
 			}
 
-			/* TODO: Decide where to put is cleanup */
 			file_compilation_memory_clean();
 			fclose(p_file);
 		}
 
 		free(curr_file);
 	}
-	
 	free_operation_list();
-
-	/* TODO: debug - remove before send */
-	printf("Done compiling");
 
 	exit(0);
 }

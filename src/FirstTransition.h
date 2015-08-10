@@ -21,7 +21,6 @@
  * 				2. File name
  * Output:		Was transition successful
  */
-
 bool first_transition_execute(FILE* pFile, char* file_name, unsigned int* IC, unsigned int* DC);
 
 /*
